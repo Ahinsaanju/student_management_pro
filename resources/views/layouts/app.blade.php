@@ -70,6 +70,9 @@
                 <a href="{{ route('admin.students.index') }}" class="{{ request()->is('admin/students') ? 'active' : '' }}">
                     <i class="bi bi-people me-2"></i> Manage Students
                 </a>
+                <a href="{{ route('admin.teachers.index') }}" class="{{ request()->is('admin/teachers') ? 'active' : '' }}">
+                    <i class="bi bi-person-workspace me-2"></i> Manage Teachers
+                </a>
                 <a href="{{ route('admin.courses.index') }}" class="{{ request()->is('admin/courses') ? 'active' : '' }}">
                     <i class="bi bi-book me-2"></i> Manage Courses
                 </a>
@@ -102,6 +105,28 @@
                     <i class="bi bi-person-circle me-2"></i> My Profile
                 </a>
             @endif
+
+            <!-- ================= TEACHER MENU ================= -->
+           
+            @if(request()->is('teacher/*'))
+                <div class="menu-label">Teacher Portal</div>
+                
+                <a href="{{ url('/teacher/dashboard') }}" class="{{ request()->is('teacher/dashboard') ? 'active' : '' }}">
+                    <i class="bi bi-speedometer2 me-2"></i> Teacher Dashboard
+                </a>
+                <a href="#">
+                    <i class="bi bi-journal-check me-2"></i> My Modules
+                </a>
+                <a href="{{ route('teacher.attendance.create') }}" class="{{ request()->is('teacher/attendance/*') ? 'active' : '' }}">
+                    <i class="bi bi-calendar-check me-2"></i> Mark Attendance
+                </a>
+                <a href="{{ route('teacher.grades.create') }}" class="{{ request()->is('teacher/grades/*') ? 'active' : '' }}">
+                    <i class="bi bi-file-earmark-spreadsheet me-2"></i> Submit Grades
+                </a>
+                <a href="#">
+                    <i class="bi bi-person-bounding-box me-2"></i> My Profile
+                </a>
+            @endif
             
             <!-- පොදු Navigation  -->
             <hr class="bg-light mx-3 mt-4">
@@ -119,6 +144,8 @@
                 <span class="navbar-brand mb-0 h1 fs-5 text-muted fw-semibold">
                     @if(request()->is('student/*'))
                         Student Management Portal
+                    @elseif(request()->is('teacher/*'))
+                        Teacher Management Portal
                     @else
                         System Administrator Portal
                     @endif

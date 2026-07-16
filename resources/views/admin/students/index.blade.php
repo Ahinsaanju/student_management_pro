@@ -11,7 +11,7 @@
     @endif
 
     <div class="row g-4">
-        <!--  Add New Student Form  -->
+        <!-- 📝 Add New Student Form -->
         <div class="col-lg-4">
             <div class="card border-0 shadow-sm p-4 bg-white" style="border-radius: 16px;">
                 <h5 class="fw-bold text-dark mb-4"><i class="bi bi-person-plus-fill text-primary me-2"></i>Add New Student</h5>
@@ -23,8 +23,13 @@
                         <input type="text" name="student_id" class="form-control" placeholder="e.g. STD-2061" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold text-muted">Full Name</label>
-                        <input type="text" name="name" class="form-control" placeholder="e.g. Kasun Perera" required>
+                        <label class="form-label">First Name</label>
+                        <input type="text" name="first_name" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Last Name</label>
+                        <input type="text" name="last_name" class="form-control" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-semibold text-muted">Email Address</label>
@@ -39,12 +44,25 @@
                             <option value="Data Science">Data Science</option>
                         </select>
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label">Date of Birth</label>
+                        <input type="date" name="dob" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Gender</label>
+                        <select name="gender" class="form-select" required>
+                            <option value="">Select Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </div>
                     <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-bold mt-2">Register Student</button>
                 </form>
             </div>
         </div>
 
-        <!-- 📋 දකුණු පැත්තේ තියෙන්නේ Registered Students List Table එක -->
+        <!-- 📋 Registered Students Table -->
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm p-4 bg-white" style="border-radius: 16px;">
                 <h5 class="fw-bold text-dark mb-4"><i class="bi bi-people-fill text-primary me-2"></i>Registered Students</h5>
@@ -63,9 +81,9 @@
                         <tbody>
                             @forelse($students as $student)
                             <tr>
-                                <td class="fw-semibold">#{{ $student->student_id }}</td>
-                                <td>{{ $student->user->name ?? 'N/A' }}</td>
-                                <td>{{ $student->user->email ?? 'N/A' }}</td>
+                                <td class="fw-semibold">#{{ $student->student_reg_no }}</td>
+                                <td>{{ $student->first_name }}</td>
+                                <td>{{ $student->email }}</td>
                                 <td>{{ $student->course }}</td>
                                 <td><span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">{{ $student->status }}</span></td>
                             </tr>

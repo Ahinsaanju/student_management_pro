@@ -10,40 +10,45 @@ use Illuminate\Support\Facades\Hash;
 
 class StudentController extends Controller
 {
-    // 
     public function index()
     {
-        // Users table එකත් එක්ක join කරලා ස්ටුඩන්ට්ස්ලා සේරම ගන්නවා
         $students = Student::with('user')->latest()->get();
         return view('admin.students.index', compact('students'));
     }
 
-    // 
+    
     public function store(Request $request)
     {
-        
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'student_id' => 'required|string|unique:students',
-            'course' => 'required|string',
+            'student_id' => 'required|string|unique:students,student_reg_no',
+            'first_name' => 'required|string|max:255',
+            'last_name'  => 'required|string|max:255',
+            'email'      => 'required|email|unique:users,email',
+            'course'     => 'required|string',
+            'dob'        => 'required|date',
+            'gender'     => 'required|string',
         ]);
 
         
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make('12345678'), // Default password එකක් දෙනවා
-            'role' => 'student',
+            'name' => $request->first_name . ' ' . $request->last_name,
+            'email'    => $request->email,
+            'password' => Hash::make('12345678'), // Default password
+            'role'     => 'student',
         ]);
+        
 
-       
         Student::create([
-            'user_id' => $user->id,
-            'student_id' => $request->student_id,
-            'course' => $request->course,
-            'status' => 'Active',
-        ]);
+        'user_id'         => $user->id,
+        'student_reg_no'  => $request->student_id,
+        'first_name'      => $request->first_name,
+        'last_name'       => $request->last_name,
+        'email'           => $request->email,
+        'dob'             => $request->dob,
+        'gender'          => $request->gender,
+        'course'          => $request->course,
+        'status'          => 'active',
+    ]);
 
         return redirect()->back()->with('success', 'Student registered successfully!');
     }

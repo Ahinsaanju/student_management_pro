@@ -15,8 +15,9 @@ return new class extends Migration
             $table->id();
             // Foreign Key connected to 'students' table
             $table->foreignId('student_id')->constrained()->onDelete('cascade');
+            $table->foreignId('course_id')->constrained()->onDelete('cascade');
             $table->date('date');
-            $table->string('status'); // Present, Absent, Leave
+            $table->enum('status', ['Present', 'Absent']);
             $table->timestamps();
         });
     }

@@ -10,8 +10,17 @@ class Student extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'student_id', 'course', 'status']; 
-
+    protected $fillable = [
+    'user_id',
+    'student_reg_no',
+    'first_name',
+    'last_name',
+    'email',
+    'dob',
+    'gender',
+    'status',
+    'course'
+];
     
     public function user(): BelongsTo
     {
