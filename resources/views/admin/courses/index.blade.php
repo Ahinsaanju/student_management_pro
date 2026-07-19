@@ -65,6 +65,19 @@
                                 <td>{{ $course->course_name }}</td>
                                 <td><span class="badge bg-secondary rounded-pill px-3">{{ $course->credits }} Credits</span></td>
                                 <td>{{ $course->semester }}</td>
+                                <td class="text-center">
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <a href="{{ route('admin.courses.edit', $course->id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                            <i class="bi bi-pencil-square"></i> Edit
+                                        </a>
+                                        <form action="{{ route('admin.courses.destroy', $course->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this course?');">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                                                <i class="bi bi-trash"></i> Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
                             </tr>
                             @empty
                             <tr>

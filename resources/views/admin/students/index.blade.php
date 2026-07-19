@@ -86,6 +86,19 @@
                                 <td>{{ $student->email }}</td>
                                 <td>{{ $student->course }}</td>
                                 <td><span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">{{ $student->status }}</span></td>
+                                <td class="text-center">
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <a href="{{ route('admin.students.edit', $student->id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                            <i class="bi bi-pencil-square"></i> Edit
+                                        </a>
+                                        <form action="{{ route('admin.students.destroy', $student->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this student?');">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                                                <i class="bi bi-trash"></i> Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
                             </tr>
                             @empty
                             <tr>

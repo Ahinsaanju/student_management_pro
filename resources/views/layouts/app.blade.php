@@ -26,7 +26,7 @@
             color: #f8f9fa;
             display: block;
             transition: 0.3s;
-            border-radius: 0 50px 50px 0; /* Active වෙද්දි ලස්සනක් එන්න */
+            border-radius: 0 50px 50px 0; 
             margin-right: 15px;
         }
         .sidebar a:hover, .sidebar a.active {
@@ -76,10 +76,10 @@
                 <a href="{{ route('admin.courses.index') }}" class="{{ request()->is('admin/courses') ? 'active' : '' }}">
                     <i class="bi bi-book me-2"></i> Manage Courses
                 </a>
-                <a href="#">
+                <a href="{{ route('admin.attendance.logs') }}">
                     <i class="bi bi-calendar-check me-2"></i> Attendance Logs
                 </a>
-                <a href="#">
+                <a href="{{ route('admin.exam.grades') }}">
                     <i class="bi bi-mortarboard me-2"></i> Exam Grades
                 </a>
             @endif

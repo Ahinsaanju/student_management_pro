@@ -48,5 +48,51 @@ class TeacherController extends Controller
 
         return redirect()->back()->with('success', 'Teacher registered successfully!');
     }
-    //
+    
+
+public function edit($id)
+{
+    $teacher = \App\Models\Teacher::findOrFail($id);
+    return view('admin.teachers.edit', compact('teacher'));
+}
+
+
+public function update(\Illuminate\Http\Request $request, $id)
+{
+    $teacher = \App\Models\Teacher::findOrFail($id);
+    
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|max:255|unique:users,email,' . $teacher->user_id,
+        'phone' => 'required|string|max:20',
+    ]);
+
+    
+    $teacher->user->update([
+        'name' => $request->name,
+        'email' => $request->email,
+    ]);
+
+    
+    $teacher->update([
+        'phone' => $request->phone,
+    ]);
+
+    return redirect()->route('admin.teachers.index')->with('success', 'Teacher record updated successfully!');
+}
+
+
+public function destroy($id)
+{
+    $teacher = \App\Models\Teacher::findOrFail($id);
+    
+    
+    if ($teacher->user) {
+        $teacher->user->delete();
+    } else {
+        $teacher->delete();
+    }
+
+    return redirect()->route('admin.teachers.index')->with('success', 'Teacher deleted successfully!');
+}
 }
