@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Teacher;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class TeacherController extends Controller
@@ -20,33 +21,39 @@ class TeacherController extends Controller
     
     public function store(Request $request)
     {
+        // 1. Validation Logic
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'teacher_code' => 'required|string|unique:teachers',
-            'department' => 'required|string',
-            'designation' => 'required|string',
-            'phone' => 'nullable|string',
+            'name'         => 'required|string|max:255',
+            'email'        => 'required|string|email|max:255|unique:users,email',
+            'teacher_code' => 'required|string|unique:teachers,teacher_code',
+            'department'   => 'required|string',
+            'designation'  => 'required|string',
+            'phone'        => 'nullable|string',
         ]);
 
-       
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make('teacher123'), // Default password එක
-            'role' => 'teacher',
-        ]);
+        // 2. Safe Database Operations using Transactions
+        DB::transaction(function () use ($request) {
 
-       
-        Teacher::create([
-            'user_id' => $user->id,
-            'teacher_code' => $request->teacher_code,
-            'department' => $request->department,
-            'designation' => $request->designation,
-            'phone' => $request->phone,
-        ]);
+            // Create User Account (Auth)
+            $user = User::create([
+                'name'     => $request->name,
+                'email'    => $request->email,
+                'password' => Hash::make('teacher123'), // Default password
+                'role'     => 'teacher',
+            ]);
 
-        return redirect()->back()->with('success', 'Teacher registered successfully!');
+            // Create Teacher Profile Record
+            Teacher::create([
+                'user_id'      => $user->id,
+                'teacher_code' => $request->teacher_code,
+                'department'   => $request->department,
+                'designation'  => $request->designation,
+                'phone'        => $request->phone,
+            ]);
+        });
+
+        // 3. Response Success Message
+        return redirect()->back()->with('success', 'Teacher registered successfully! Default password is: teacher123');
     }
     
 

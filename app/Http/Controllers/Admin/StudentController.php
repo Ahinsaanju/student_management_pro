@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Student;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class StudentController extends Controller
@@ -19,6 +20,7 @@ class StudentController extends Controller
     
     public function store(Request $request)
     {
+        // 1. Validation Logic
         $request->validate([
             'student_id' => 'required|string|unique:students,student_reg_no',
             'first_name' => 'required|string|max:255',
@@ -29,28 +31,33 @@ class StudentController extends Controller
             'gender'     => 'required|string',
         ]);
 
-        
-        $user = User::create([
-            'name' => $request->first_name . ' ' . $request->last_name,
-            'email'    => $request->email,
-            'password' => Hash::make('12345678'), // Default password
-            'role'     => 'student',
-        ]);
-        
+        // 2. Safe Database Operations using Transactions
+        DB::transaction(function () use ($request) {
+            
+            // Create User Account (Auth)
+            $user = User::create([
+                'name'     => $request->first_name . ' ' . $request->last_name,
+                'email'    => $request->email,
+                'password' => Hash::make('12345678'), // Default initial password
+                'role'     => 'student',
+            ]);
 
-        Student::create([
-        'user_id'         => $user->id,
-        'student_reg_no'  => $request->student_id,
-        'first_name'      => $request->first_name,
-        'last_name'       => $request->last_name,
-        'email'           => $request->email,
-        'dob'             => $request->dob,
-        'gender'          => $request->gender,
-        'course'          => $request->course,
-        'status'          => 'active',
-    ]);
+            // Create Student Profile Record
+            Student::create([
+                'user_id'        => $user->id,
+                'student_reg_no' => $request->student_id,
+                'first_name'     => $request->first_name,
+                'last_name'      => $request->last_name,
+                'email'          => $request->email,
+                'dob'            => $request->dob,
+                'gender'         => $request->gender,
+                'course'         => $request->course,
+                'status'         => 'active',
+            ]);
+        });
 
-        return redirect()->back()->with('success', 'Student registered successfully!');
+        // 3. Response Success Message
+        return redirect()->back()->with('success', 'Student registered successfully! Default password is: 12345678');
     }
     
 public function edit($id) {
@@ -69,5 +76,20 @@ public function destroy($id) {
     $student = Student::findOrFail($id);
     $student->delete();
     return redirect()->route('admin.students.index')->with('success', 'Deleted successfully!');
+}
+public function profile()
+{
+    $user = auth()->user(); 
+    return view('profile.show', compact('user')); 
+}
+public function results()
+{
+    $user = auth()->user();
+    
+    $student = Student::where('user_id', $user->id)
+                      ->with('results.subject') 
+                      ->first();
+
+    return view('student.results', compact('student'));
 }
 }

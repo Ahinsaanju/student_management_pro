@@ -98,11 +98,12 @@
                 <a href="#">
                     <i class="bi bi-journal-text me-2"></i> Course Modules
                 </a>
-                <a href="#">
-                    <i class="bi bi-award me-2"></i> Exam Results
+                <a href="{{ route('student.results') }}" 
+                class="nav-link {{ request()->routeIs('student.results') ? 'active' : '' }}">
+                    <i class="bi bi-journal-check me-2"></i> Exam Results
                 </a>
-                <a href="#">
-                    <i class="bi bi-person-circle me-2"></i> My Profile
+                <a href="{{ route('student.profile') }}" class="nav-link">
+                    <i class="bi bi-person me-2"></i> My Profile
                 </a>
             @endif
 
@@ -130,7 +131,23 @@
             
             <!-- පොදු Navigation  -->
             <hr class="bg-light mx-3 mt-4">
-            <a href="{{ url('/') }}" class="text-muted"><i class="bi bi-box-arrow-left me-2"></i> Exit Portal</a>
+
+            <!-- 1. Goto web site Home page -->
+            <a href="{{ url('/') }}" class="text-white-50 nav-link mx-3 mb-2 d-flex align-items-center">
+                <i class="bi bi-house me-2"></i> 
+                <span>Exit Portal</span>
+            </a>
+
+            <!-- 2. System Log out  -->
+            <a href="#" class="text-danger nav-link mx-3 d-flex align-items-center" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                <i class="bi bi-box-arrow-left me-2"></i> 
+                <span>Logout</span>
+            </a>
+
+            <!-- Background  Hidden Form  -->
+            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                @csrf
+            </form>
 
         </div>
     </div>
