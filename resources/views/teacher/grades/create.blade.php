@@ -3,6 +3,7 @@
 @section('content')
 <div class="container-fluid py-3">
 
+    <!-- Success Message Alert -->
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
             <i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}
@@ -10,9 +11,30 @@
         </div>
     @endif
 
+    <!-- Error Message Alert -->
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    <!-- Validation Errors Alert -->
+    @if ($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li><i class="bi bi-exclamation-circle me-1"></i>{{ $error }}</li>
+                @endforeach
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <div class="card border-0 shadow-sm p-4 bg-white" style="border-radius: 16px;">
         <h4 class="fw-bold text-dark mb-4"><i class="bi bi-file-earmark-spreadsheet text-primary me-2"></i>Submit Exam Marks</h4>
         
+        <!-- ⚠️ Form Tag Starts Here -->
         <form action="{{ route('teacher.grades.store') }}" method="POST">
             @csrf
             
@@ -23,7 +45,9 @@
                     <select name="course_id" class="form-select" required>
                         <option value="" selected disabled>Choose Module</option>
                         @foreach($courses as $course)
-                            <option value="{{ $course->id }}">{{ $course->course_code }} - {{ $course->course_name }}</option>
+                            <option value="{{ $course->id }}" {{ old('course_id') == $course->id ? 'selected' : '' }}>
+                                {{ $course->course_code }} - {{ $course->course_name }}
+                            </option>
                         @endforeach
                     </select>
                 </div>
@@ -42,11 +66,11 @@
                     <tbody>
                         @forelse($students as $student)
                         <tr>
-                            <td class="fw-semibold">#{{ $student->student_reg_no }}</td>
+                            <td class="fw-semibold">#{{ $student->student_reg_no ?? $student->id }}</td>
                             <td>{{ $student->user->name ?? 'N/A' }}</td>
                             <td>
                                 <div class="input-group input-group-sm">
-                                    <input type="number" name="marks[{{ $student->id }}]" class="form-control" placeholder="Enter marks" min="0" max="100">
+                                    <input type="number" name="marks[{{ $student->id }}]" class="form-control" placeholder="Enter marks" min="0" max="100" step="0.01">
                                     <span class="input-group-text">%</span>
                                 </div>
                             </td>
@@ -60,11 +84,14 @@
                 </table>
             </div>
 
-            <!-- Submit Button -->
+            <!-- Submit Button (MUST BE INSIDE <form>) -->
             <div class="text-end">
                 <button type="submit" class="btn btn-primary rounded-pill px-5 py-2 fw-bold shadow-sm">Submit Grades</button>
             </div>
+
         </form>
+        <!-- ⚠️ Form Tag Ends Here -->
+
     </div>
 </div>
 @endsection

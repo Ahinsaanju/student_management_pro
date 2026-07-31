@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Management System</title>
+    <title>{{ config('app.name', 'Studora') }}</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -18,6 +18,8 @@
             left: 0;
             background-color: #212529;
             padding-top: 20px;
+            z-index: 1000;
+            overflow-y: auto;
         }
         .sidebar a {
             padding: 12px 20px;
@@ -47,84 +49,79 @@
         }
     </style>
 </head>
-<body>
+<body class="bg-light">
 
     <!-- Sidebar  -->
     <div class="sidebar">
         <div class="text-center text-white mb-4">
-            
             <h4 class="fw-bold"><i class="bi bi-mortarboard-fill text-primary me-2"></i>StuDora</h4>
             <hr class="bg-light mx-3">
         </div>
         
-        <div class="nav flex-column">
+        <div class="nav flex-column mb-4">
 
             <!-- ================= ADMIN MENU ================= -->
-            
-            @if(request()->is('dashboard') || request()->is('admin/*'))
+            @if(auth()->user()->role === 'admin' || request()->is('dashboard') || request()->is('admin/*'))
                 <div class="menu-label">Admin Portal</div>
                 
                 <a href="{{ url('/dashboard') }}" class="{{ request()->is('dashboard') ? 'active' : '' }}">
                     <i class="bi bi-speedometer2 me-2"></i> Dashboard
                 </a>
-                <a href="{{ route('admin.students.index') }}" class="{{ request()->is('admin/students') ? 'active' : '' }}">
+                <a href="{{ route('admin.students.index') }}" class="{{ request()->is('admin/students*') ? 'active' : '' }}">
                     <i class="bi bi-people me-2"></i> Manage Students
                 </a>
-                <a href="{{ route('admin.teachers.index') }}" class="{{ request()->is('admin/teachers') ? 'active' : '' }}">
+                <a href="{{ route('admin.teachers.index') }}" class="{{ request()->is('admin/teachers*') ? 'active' : '' }}">
                     <i class="bi bi-person-workspace me-2"></i> Manage Teachers
                 </a>
-                <a href="{{ route('admin.courses.index') }}" class="{{ request()->is('admin/courses') ? 'active' : '' }}">
+                <a href="{{ route('admin.courses.index') }}" class="{{ request()->is('admin/courses*') ? 'active' : '' }}">
                     <i class="bi bi-book me-2"></i> Manage Courses
                 </a>
-                <a href="{{ route('admin.attendance.logs') }}">
+                <a href="{{ route('admin.attendance.logs') }}" class="{{ request()->routeIs('admin.attendance.logs') ? 'active' : '' }}">
                     <i class="bi bi-calendar-check me-2"></i> Attendance Logs
                 </a>
-                <a href="{{ route('admin.exam.grades') }}">
+                <a href="{{ route('admin.exam.grades') }}" class="{{ request()->routeIs('admin.exam.grades') ? 'active' : '' }}">
                     <i class="bi bi-mortarboard me-2"></i> Exam Grades
                 </a>
             @endif
 
             <!-- ================= STUDENT MENU ================= -->
-           
-            @if(request()->is('student/*'))
+            @if(auth()->user()->role === 'student' || request()->is('student/*'))
                 <div class="menu-label">Student Portal</div>
                 
                 <a href="{{ url('/student/dashboard') }}" class="{{ request()->is('student/dashboard') ? 'active' : '' }}">
                     <i class="bi bi-house-door me-2"></i> Student Home
                 </a>
-                <a href="#">
+                <a href="#" class="{{ request()->is('student/attendance*') ? 'active' : '' }}">
                     <i class="bi bi-calendar2-check me-2"></i> My Attendance
                 </a>
-                <a href="#">
+                <a href="#" class="{{ request()->is('student/modules*') ? 'active' : '' }}">
                     <i class="bi bi-journal-text me-2"></i> Course Modules
                 </a>
-                <a href="{{ route('student.results') }}" 
-                class="nav-link {{ request()->routeIs('student.results') ? 'active' : '' }}">
+                <a href="{{ route('student.results') }}" class="{{ request()->routeIs('student.results') ? 'active' : '' }}">
                     <i class="bi bi-journal-check me-2"></i> Exam Results
                 </a>
-                <a href="{{ route('student.profile') }}" class="nav-link">
+                <a href="{{ route('profile.edit') }}" class="{{ request()->routeIs('profile.edit') ? 'active' : '' }}">
                     <i class="bi bi-person me-2"></i> My Profile
                 </a>
             @endif
 
             <!-- ================= TEACHER MENU ================= -->
-           
-            @if(request()->is('teacher/*'))
+            @if(auth()->user()->role === 'teacher' || request()->is('teacher/*'))
                 <div class="menu-label">Teacher Portal</div>
                 
                 <a href="{{ url('/teacher/dashboard') }}" class="{{ request()->is('teacher/dashboard') ? 'active' : '' }}">
                     <i class="bi bi-speedometer2 me-2"></i> Teacher Dashboard
                 </a>
-                <a href="#">
+                <a href="{{ route('teacher.modules.index') }}" class="{{ request()->is('teacher/modules*') ? 'active' : '' }}">
                     <i class="bi bi-journal-check me-2"></i> My Modules
                 </a>
-                <a href="{{ route('teacher.attendance.create') }}" class="{{ request()->is('teacher/attendance/*') ? 'active' : '' }}">
+                <a href="{{ route('teacher.attendance.create') }}" class="{{ request()->is('teacher/attendance*') ? 'active' : '' }}">
                     <i class="bi bi-calendar-check me-2"></i> Mark Attendance
                 </a>
-                <a href="{{ route('teacher.grades.create') }}" class="{{ request()->is('teacher/grades/*') ? 'active' : '' }}">
+                <a href="{{ route('teacher.grades.create') }}" class="{{ request()->is('teacher/grades*') ? 'active' : '' }}">
                     <i class="bi bi-file-earmark-spreadsheet me-2"></i> Submit Grades
                 </a>
-                <a href="#">
+                <a href="{{ route('profile.edit') }}" class="{{ request()->routeIs('profile.edit') ? 'active' : '' }}">
                     <i class="bi bi-person-bounding-box me-2"></i> My Profile
                 </a>
             @endif
@@ -144,7 +141,7 @@
                 <span>Logout</span>
             </a>
 
-            <!-- Background  Hidden Form  -->
+            <!-- Background Hidden Form -->
             <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                 @csrf
             </form>
@@ -155,18 +152,24 @@
     <!-- Main Content Dynamic Section -->
     <div class="main-content">
         <!-- Top Navbar -->
-        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm rounded mb-4">
-            <div class="container-fluid">
+        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm rounded mb-4 px-3">
+            <div class="container-fluid d-flex justify-content-between align-items-center">
                 
                 <span class="navbar-brand mb-0 h1 fs-5 text-muted fw-semibold">
-                    @if(request()->is('student/*'))
+                    @if(auth()->user()->role === 'student' || request()->is('student/*'))
                         Student Management Portal
-                    @elseif(request()->is('teacher/*'))
+                    @elseif(auth()->user()->role === 'teacher' || request()->is('teacher/*'))
                         Teacher Management Portal
                     @else
                         System Administrator Portal
                     @endif
                 </span>
+
+                <!-- Dynamic Logged User Name -->
+                <div class="fw-bold text-primary">
+                    <i class="bi bi-person-circle me-1"></i> {{ Auth::user()->name }}
+                </div>
+
             </div>
         </nav>
 

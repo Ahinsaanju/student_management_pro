@@ -8,6 +8,8 @@ use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class StudentController extends Controller
 {
@@ -91,5 +93,46 @@ public function results()
                       ->first();
 
     return view('student.results', compact('student'));
+}
+public function exportCsv(): StreamedResponse
+{
+    $fileName = 'students_list_' . date('Y-m-d') . '.csv';
+    $students = \App\Models\Student::with('user')->get();
+
+    $headers = [
+        "Content-type"        => "text/csv",
+        "Content-Disposition" => "attachment; filename=$fileName",
+        "Pragma"              => "no-cache",
+        "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+        "Expires"             => "0"
+    ];
+
+    $callback = function() use ($students) {
+        $file = fopen('php://output', 'w');
+        // Column Headers
+        fputcsv($file, ['ID', 'Student Name', 'Email', 'Reg No / Code', 'Created At']);
+
+        foreach ($students as $student) {
+            fputcsv($file, [
+                $student->id,
+                $student->name ?? ($student->user->name ?? 'N/A'),
+                $student->email ?? ($student->user->email ?? 'N/A'),
+                $student->reg_number ?? $student->student_id ?? 'N/A',
+                $student->created_at
+            ]);
+        }
+        fclose($file);
+    };
+
+    return response()->stream($callback, 200, $headers);
+}
+public function exportPdf()
+{
+    $students = \App\Models\Student::with('user')->get();
+
+   
+    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.reports.students_pdf', compact('students'));
+
+    return $pdf->download('students_list_' . date('Y-m-d') . '.pdf');
 }
 }

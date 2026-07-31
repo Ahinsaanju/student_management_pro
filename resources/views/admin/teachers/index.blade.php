@@ -66,7 +66,7 @@
                                 <th>Email</th>
                                 <th>Department</th>
                                 <th>Designation</th>
-                                <th class="text-center">Action</th> <!-- 👈 මෙතන අඩු වෙලා තිබ්බ Column එක දැම්මා -->
+                                <th class="text-center">Action</th> 
                             </tr>
                         </thead>
                         <tbody>
@@ -79,9 +79,9 @@
                                 <td><span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-3 py-1">{{ $teacher->designation }}</span></td>
                               <td class="text-center">
                                     <div class="d-flex justify-content-center gap-2">
-                                        <a href="{{ url('/admin/teachers/' . $teacher->id . '/edit') }}" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold">
+                                       <a href="{{ url('/admin/teachers/' . $teacher->teacher_code . '/edit') }}" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold">
                                             <i class="bi bi-pencil-square me-1"></i>Edit
-                                        </a>
+                                       </a>
                                         
                                         <form action="{{ url('/admin/teachers/' . $teacher->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this teacher?');">
                                             @csrf 

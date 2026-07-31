@@ -26,7 +26,7 @@
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <h6 class="text-muted fw-semibold mb-2">Assigned Modules</h6>
-                        <h3 class="fw-bold text-dark mb-0">4</h3>
+                        <h3 class="fw-bold text-dark mb-0">{{ $assignedModulesCount }}</h3>
                     </div>
                     <div class="bg-primary bg-opacity-10 p-3 rounded-4"><i class="bi bi-journal-bookmark-fill text-primary fs-3"></i></div>
                 </div>
@@ -37,7 +37,7 @@
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <h6 class="text-muted fw-semibold mb-2">Total Students</h6>
-                        <h3 class="fw-bold text-dark mb-0">120</h3>
+                        <h3 class="fw-bold text-dark mb-0">{{ $totalStudentsCount }}</h3>
                     </div>
                     <div class="bg-info bg-opacity-10 p-3 rounded-4"><i class="bi bi-people-fill text-info fs-3"></i></div>
                 </div>
@@ -48,7 +48,7 @@
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <h6 class="text-muted fw-semibold mb-2">Pending Assessments</h6>
-                        <h3 class="fw-bold text-dark mb-0">2</h3>
+                        <h3 class="fw-bold text-dark mb-0">{{ $pendingAssessmentsCount }}</h3>
                     </div>
                     <div class="bg-warning bg-opacity-10 p-3 rounded-4"><i class="bi bi-clock-history text-warning fs-3"></i></div>
                 </div>

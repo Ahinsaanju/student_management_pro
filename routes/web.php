@@ -1,16 +1,13 @@
 <?php
 
-use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Admin\StudentController;
-use App\Http\Controllers\Admin\CourseController;
-use App\Http\Controllers\Admin\TeacherController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\ProfileController; // 👈 ProfileController import 
-use App\Http\Controllers\Teacher\AttendanceController as TeacherAttendanceController;
-use App\Http\Controllers\Teacher\GradeController as TeacherGradeController;
+use App\Http\Controllers\Admin\StudentController;
+use App\Http\Controllers\Admin\TeacherController as AdminTeacherController;
+use App\Http\Controllers\Admin\CourseController;
+use App\Http\Controllers\Teacher\AttendanceController;
+use App\Http\Controllers\Teacher\GradeController;
 use Illuminate\Support\Facades\Route;
-use App\Models\Course;
-
 
 /*
 |--------------------------------------------------------------------------
@@ -18,117 +15,105 @@ use App\Models\Course;
 |--------------------------------------------------------------------------
 */
 
+// Home Page
 Route::get('/', function () {
     return view('welcome');
 });
 
-// Authentication Routes
-Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [LoginController::class, 'login']);
-Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+// 🔒 Authenticated Users (Admin, Teacher, Student) සඳහා Protected Routes
+Route::middleware(['auth', 'verified'])->group(function () {
 
-/*
-|--------------------------------------------------------------------------
-| Protected Routes 
-|--------------------------------------------------------------------------
-*/
-Route::middleware(['auth'])->group(function () {
+    // 🔀 Central Role-Based Redirector
+    Route::get('/dashboard', function () {
+        $role = auth()->user()->role;
 
-    // 👤 Profile Management Routes
-    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
-    Route::post('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+        if ($role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        } elseif ($role === 'teacher') {
+            return redirect()->route('teacher.dashboard');
+        }
 
-    // 📊 Admin Dashboard Route
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        return redirect()->route('student.dashboard');
+    })->name('dashboard');
 
-    // 🎓 Student Dashboard Page
-    Route::get('/student/dashboard', function () {
-        return view('student.dashboard');
-    })->name('student.dashboard');
 
-    // 👨‍🏫 Teacher Dashboard Route
-    Route::get('/teacher/dashboard', function () {
-        $teacherUser = auth()->user(); 
-        $myCourses = Course::where('teacher_id', $teacherUser->id ?? null)->get();
+    // 👨‍🎓 Student Routes
+    Route::prefix('student')->name('student.')->group(function () {
+        Route::get('/dashboard', function () {
+            return view('student.dashboard');
+        })->name('dashboard');
 
-        return view('teacher.dashboard', compact('teacherUser', 'myCourses'));
-    })->name('teacher.dashboard');
+        Route::get('/results', [StudentController::class, 'results'])->name('results');
+    });
 
-    /*
-    |--------------------------------------------------------------------------
-    | Admin Modules (Full CRUD)
-    |--------------------------------------------------------------------------
-    */
 
-    // Students CRUD
-    Route::resource('admin/students', StudentController::class)->names([
-        'index'   => 'admin.students.index',
-        'store'   => 'admin.students.store',
-        'create'  => 'admin.students.create',
-        'show'    => 'admin.students.show',
-        'edit'    => 'admin.students.edit',
-        'update'  => 'admin.students.update',
-        'destroy' => 'admin.students.destroy',
-    ]);
+    // 👨‍🏫 Teacher Routes Group
+    Route::prefix('teacher')->name('teacher.')->group(function () {
+        Route::get('/dashboard', [AdminTeacherController::class, 'dashboard'])->name('dashboard');
 
-    // Courses CRUD
-    Route::resource('admin/courses', CourseController::class)->names([
-        'index'   => 'admin.courses.index',
-        'store'   => 'admin.courses.store',
-        'create'  => 'admin.courses.create',
-        'show'    => 'admin.courses.show',
-        'edit'    => 'admin.courses.edit',
-        'update'  => 'admin.courses.update',
-        'destroy' => 'admin.courses.destroy',
-    ]);
+        // 📚 My Modules Route
+        Route::get('/modules', function () {
+            $courses = \App\Models\Course::all();
+            return view('teacher.modules.index', compact('courses'));
+        })->name('modules.index');
 
-    // Teachers CRUD
-    Route::resource('admin/teachers', TeacherController::class)->names([
-        'index'   => 'admin.teachers.index',
-        'store'   => 'admin.teachers.store',
-        'create'  => 'admin.teachers.create',
-        'show'    => 'admin.teachers.show',
-        'edit'    => 'admin.teachers.edit',
-        'update'  => 'admin.teachers.update',
-        'destroy' => 'admin.teachers.destroy',
-    ]);
+        // Attendance Routes
+        Route::get('/attendance', function () {
+            return view('teacher.attendance.index');
+        })->name('attendance.index');
 
-    /*
-    |--------------------------------------------------------------------------
-    | Teacher Modules
-    |--------------------------------------------------------------------------
-    */
-    Route::get('/teacher/attendance/create', [TeacherAttendanceController::class, 'create'])->name('teacher.attendance.create');
-    Route::post('/teacher/attendance/store', [TeacherAttendanceController::class, 'store'])->name('teacher.attendance.store');
+        Route::get('/attendance/create', function () {
+            $courses = \App\Models\Course::all();
+            $students = \App\Models\Student::all();
+            return view('teacher.attendance.create', compact('courses', 'students'));
+        })->name('attendance.create');
 
-    Route::get('/teacher/grades/create', [TeacherGradeController::class, 'create'])->name('teacher.grades.create');
-    Route::post('/teacher/grades/store', [TeacherGradeController::class, 'store'])->name('teacher.grades.store');
+        Route::post('/attendance/store', [AttendanceController::class, 'store'])->name('attendance.store');
 
-    /*
-    |--------------------------------------------------------------------------
-    | Admin Attendance & Exam Grades Logs + CRUD
-    |--------------------------------------------------------------------------
-    */
-    Route::get('/admin/attendance-logs', [DashboardController::class, 'attendanceLogs'])->name('admin.attendance.logs');
-    Route::get('/admin/exam-grades', [DashboardController::class, 'examGrades'])->name('admin.exam.grades');
+        // Grades / Marks Routes
+        Route::get('/grades', function () {
+            return view('teacher.grades.index');
+        })->name('grades.index');
 
-    Route::get('/admin/attendance/{id}/edit', [DashboardController::class, 'editAttendance'])->name('admin.attendance.edit');
-    Route::put('/admin/attendance/{id}', [DashboardController::class, 'updateAttendance'])->name('admin.attendance.update');
-    Route::delete('/admin/attendance/{id}', [DashboardController::class, 'destroyAttendance'])->name('admin.attendance.destroy');
+        Route::get('/grades/create', [GradeController::class, 'create'])->name('grades.create');
+        Route::post('/grades/store', [GradeController::class, 'store'])->name('grades.store');
+    });
 
-    Route::get('/admin/exam-grades/{id}/edit', [DashboardController::class, 'editGrade'])->name('admin.exam.grades.edit');
-    Route::put('/admin/exam-grades/{id}', [DashboardController::class, 'updateGrade'])->name('admin.exam.grades.update');
-    Route::delete('/admin/exam-grades/{id}', [DashboardController::class, 'destroyGrade'])->name('admin.exam.grades.destroy');
 
-    /*
-    |--------------------------------------------------------------------------
-    | Admin Advanced Reports Export Routes
-    |--------------------------------------------------------------------------
-    */
-    Route::get('/admin/export/students/csv', [DashboardController::class, 'exportStudentsCSV'])->name('admin.export.students.csv');
-    Route::get('/admin/export/students/pdf', [DashboardController::class, 'exportStudentsPDF'])->name('admin.export.students.pdf');
+    // 👨‍💼 Admin Routes Group
+    Route::prefix('admin')->name('admin.')->group(function () {
+        
+        // Admin Dashboard with Data Injection
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    
-    Route::get('/student/profile', [StudentController::class, 'profile'])->name('student.profile');
-    Route::get('/student/results', [StudentController::class, 'results'])->name('student.results')->middleware('auth');
+        // Export Routes
+        Route::get('/export-students-csv', [StudentController::class, 'exportCsv'])->name('export.students.csv');
+        Route::get('/export-students-pdf', [StudentController::class, 'exportPdf'])->name('export.students.pdf');
+
+        // Admin Resource Routes (CRUD)
+        Route::resource('students', StudentController::class);
+        Route::resource('teachers', AdminTeacherController::class);
+        Route::resource('courses', CourseController::class);
+
+        // Attendance Logs Routes
+        Route::get('/attendance-logs', [DashboardController::class, 'attendanceLogs'])->name('attendance.logs');
+        Route::get('/attendance/{id}/edit', [DashboardController::class, 'editAttendance'])->name('attendance.edit');
+        Route::put('/attendance/{id}', [DashboardController::class, 'updateAttendance'])->name('attendance.update');
+        Route::delete('/attendance/{id}', [DashboardController::class, 'destroyAttendance'])->name('attendance.destroy');
+
+        // 🎯 FIX: Exam Grades Routes වල නම Blade එකට ගැලපෙන්න වෙනස් කළා
+        Route::get('/exam-grades', [DashboardController::class, 'examGrades'])->name('exam.grades');
+        Route::get('/exam-grades/{id}/edit', [DashboardController::class, 'editGrade'])->name('exam.grades.edit');
+        Route::put('/exam-grades/{id}', [DashboardController::class, 'updateGrade'])->name('exam.grades.update');
+        Route::delete('/exam-grades/{id}', [DashboardController::class, 'destroyGrade'])->name('exam.grades.destroy');
+    });
+
+
+    // 👤 Breeze Profile Management
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+// Breeze Auth Routes
+require __DIR__.'/auth.php';

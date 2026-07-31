@@ -5,12 +5,13 @@ namespace App\Http\Controllers\Teacher;
 use App\Http\Controllers\Controller;
 use App\Models\Student;
 use App\Models\Course;
-use App\Models\Grade;
+use App\Models\Result;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class GradeController extends Controller
 {
-    // 1. marks enter form
+    // 1. Marks enter form 
     public function create()
     {
         $courses = Course::all();
@@ -18,47 +19,69 @@ class GradeController extends Controller
         return view('teacher.grades.create', compact('courses', 'students'));
     }
 
-    // 2. marks Grade Auto-calculate
+    // 2. Marks and Grade Auto-calculate & Save to Results Table
     public function store(Request $request)
-    {
-        $request->validate([
-            'course_id' => 'required|exists:courses,id',
-            'marks' => 'required|array', // Student IDs සහ Marks එන Array එක
-        ]);
+{
+    // 1. Validation
+    $request->validate([
+        'course_id' => 'required|exists:courses,id',
+        'marks'     => 'required|array',
+    ], [
+        'course_id.required' => 'Please select a Course/Module first!',
+    ]);
 
-        $courseId = $request->course_id;
+    // Selected Course details 
+    $course = Course::findOrFail($request->course_id);
 
-        foreach ($request->marks as $studentId => $mark) {
-            // marks empty student skip
-            if (is_null($mark)) continue; 
+    // Get Course Name safely
+    $subjectName = $course->course_name ?? $course->name ?? $course->course_code;
 
-            
-            $gradeLetter = 'F';
-            if ($mark >= 75) {
-                $gradeLetter = 'A';
-            } elseif ($mark >= 65) {
-                $gradeLetter = 'B';
-            } elseif ($mark >= 55) {
-                $gradeLetter = 'C';
-            } elseif ($mark >= 45) {
-                $gradeLetter = 'S';
-            } else {
-                $gradeLetter = 'F';
-            }
+    $savedCount = 0;
 
-            // save the database
-            Grade::updateOrCreate(
-                [
-                    'student_id' => $studentId,
-                    'course_id' => $courseId,
-                ],
-                [
-                    'marks' => $mark,
-                    'grade' => $gradeLetter
-                ]
-            );
+    // 2. Loop through each student's mark
+    foreach ($request->marks as $studentId => $mark) {
+
+        // skip null or empty data
+        if (is_null($mark) || $mark === '' || !is_numeric($mark)) {
+            continue; 
         }
 
-        return redirect()->back()->with('success', 'Exam grades submitted successfully!');
+        $markValue = (float) $mark;
+
+        // Grade Auto Calculation Logic
+        $gradeLetter = 'F';
+        if ($markValue >= 75) {
+            $gradeLetter = 'A';
+        } elseif ($markValue >= 65) {
+            $gradeLetter = 'B';
+        } elseif ($markValue >= 55) {
+            $gradeLetter = 'C';
+        } elseif ($markValue >= 45) {
+            $gradeLetter = 'S';
+        }
+
+        //  Save / Update 'results' to DB Table  
+        $resultRecord = Result::updateOrCreate(
+            [
+                'student_id'   => $studentId,
+                'subject_code' => $course->course_code,
+            ],
+            [
+                'subject_name' => $subjectName,
+                'marks'        => $markValue,
+                'grade'        => $gradeLetter
+            ]
+        );
+
+        
+        $resultRecord->touch();
+        $savedCount++;
     }
+
+    if ($savedCount === 0) {
+        return redirect()->back()->with('error', 'No marks were entered!');
+    }
+
+    return redirect()->back()->with('success', "Exam grades submitted successfully for {$savedCount} student(s)!");
+}
 }
