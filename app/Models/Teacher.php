@@ -10,6 +10,7 @@ class Teacher extends Model
 {
     use HasFactory;
 
+
     protected $fillable = ['user_id', 'teacher_code', 'department', 'phone', 'designation'];
 
     
@@ -17,5 +18,10 @@ class Teacher extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function getRouteKeyName()
+{
+    return 'teacher_code';
+}
     
 }

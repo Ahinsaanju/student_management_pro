@@ -2,52 +2,53 @@
 
 @section('content')
 <div class="container-fluid py-2">
-    
-    <!-- Welcome Header -->
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h2 class="fw-bold text-dark mb-1">System Administrator Dashboard</h2>
-        <p class="text-muted mb-0">Overview of Studora platform statistics, logs, and analytics.</p>
-    </div>
-    <!-- 📥 Export Buttons Group -->
-    <div class="d-flex gap-2">
-        <a href="{{ route('admin.export.students.csv') }}" class="btn btn-sm btn-white border shadow-sm rounded-pill px-3 fw-semibold bg-white text-dark">
-            <i class="bi bi-file-earmark-excel text-success me-1"></i> Export Excel
-        </a>
-        <a href="{{ route('admin.export.students.pdf') }}" target="_blank" class="btn btn-sm btn-white border shadow-sm rounded-pill px-3 fw-semibold bg-white text-dark">
-            <i class="bi bi-file-earmark-pdf text-danger me-1"></i> Export PDF
-        </a>
-    </div>
-</div>
-<!-- 🔍 Advanced Global Search & Smart Filters Section -->
-<div class="card border-0 shadow-sm p-3 bg-white mb-4" style="border-radius: 16px;">
-    <form action="{{ route('dashboard') }}" method="GET" class="row g-3 align-items-center">
-        <!-- Live Global Search -->
-        <div class="col-md-6">
-            <div class="input-group">
-                <span class="input-group-text bg-light border-0 text-muted"><i class="bi bi-search"></i></span>
-                <input type="text" name="search" value="{{ request('search') }}" class="form-control bg-light border-0" placeholder="Search by Student Name or Module Code...">
-            </div>
-        </div>
-        
-        <!-- Smart Filter Dropdown -->
-        <div class="col-md-4">
-            <select name="status" class="form-select bg-light border-0 text-muted">
-                <option value="">Filter Attendance Status (All)</option>
-                <option value="Present" {{ request('status') == 'Present' ? 'selected' : '' }}>Present</option>
-                <option value="Absent" {{ request('status') == 'Absent' ? 'selected' : '' }}>Absent</option>
-            </select>
-        </div>
 
-        <!-- Action Buttons -->
-        <div class="col-md-2 d-flex gap-2">
-            <button type="submit" class="btn btn-primary w-100 rounded-pill fw-semibold">Filter</button>
-            @if(request('search') || request('status'))
-                <a href="{{ route('dashboard') }}" class="btn btn-light rounded-pill"><i class="bi bi-x-circle text-danger"></i></a>
-            @endif
+    <!-- Welcome Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">System Administrator Dashboard</h2>
+            <p class="text-muted mb-0">Overview of Studora platform statistics, logs, and analytics.</p>
         </div>
-    </form>
-</div>
+        <!-- 📥 Export Buttons Group -->
+        <div class="d-flex gap-2">
+            <a href="{{ route('admin.export.students.csv') }}" class="btn btn-sm btn-white border shadow-sm rounded-pill px-3 fw-semibold bg-white text-dark">
+                <i class="bi bi-file-earmark-excel text-success me-1"></i> Export Excel
+            </a>
+            <a href="{{ route('admin.export.students.pdf') }}" target="_blank" class="btn btn-sm btn-white border shadow-sm rounded-pill px-3 fw-semibold bg-white text-dark">
+                <i class="bi bi-file-earmark-pdf text-danger me-1"></i> Export PDF
+            </a>
+        </div>
+    </div>
+
+    <!-- 🔍 Advanced Global Search & Smart Filters Section -->
+    <div class="card border-0 shadow-sm p-3 bg-white mb-4" style="border-radius: 16px;">
+        <form action="{{ route('admin.dashboard') }}" method="GET" class="row g-3 align-items-center">
+            <!-- Live Global Search -->
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-0 text-muted"><i class="bi bi-search"></i></span>
+                    <input type="text" name="search" value="{{ request('search') }}" class="form-control bg-light border-0" placeholder="Search by Student Name or Module Code...">
+                </div>
+            </div>
+            
+            <!-- Smart Filter Dropdown -->
+            <div class="col-md-4">
+                <select name="status" class="form-select bg-light border-0 text-muted">
+                    <option value="">Filter Attendance Status (All)</option>
+                    <option value="Present" {{ request('status') == 'Present' ? 'selected' : '' }}>Present</option>
+                    <option value="Absent" {{ request('status') == 'Absent' ? 'selected' : '' }}>Absent</option>
+                </select>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100 rounded-pill fw-semibold">Filter</button>
+                @if(request('search') || request('status'))
+                    <a href="{{ route('admin.dashboard') }}" class="btn btn-light rounded-pill"><i class="bi bi-x-circle text-danger"></i></a>
+                @endif
+            </div>
+        </form>
+    </div>
 
     <!-- Stats Overview Cards -->
     <div class="row g-4 mb-4">
@@ -134,7 +135,9 @@
             <div class="card border-0 shadow-sm p-4 bg-white" style="border-radius: 16px;">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="fw-bold text-dark mb-0"><i class="bi bi-file-earmark-spreadsheet text-success me-2"></i>Recent Exam Grades</h5>
-                    <span class="badge bg-light text-dark">Latest Semesters</span>
+                    <a href="{{ route('admin.exam.grades') }}" class="btn btn-sm btn-light rounded-pill px-3 fw-semibold shadow-sm">
+                        View All <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
@@ -150,7 +153,7 @@
                             @forelse($examGrades as $grade)
                             <tr>
                                 <td class="fw-semibold">{{ $grade->student->user->name ?? 'N/A' }}</td>
-                                <td>{{ $grade->course->course_code ?? 'N/A' }}</td>
+                                <td>{{ $grade->subject_code ?? $grade->subject_name ?? 'N/A' }}</td>
                                 <td>{{ $grade->marks }}%</td>
                                 <td><span class="badge bg-primary rounded-pill px-3">{{ $grade->grade }}</span></td>
                             </tr>
@@ -164,7 +167,7 @@
                 </div>
             </div>
         </div>
-    
+
     </div>
 
     <!-- 📊 Advanced Analytics Charts Section  -->
@@ -199,7 +202,7 @@
 </div>
 
 <!-- 📊 Data Container for Safe Pass  -->
-<div id="analytics-data" 
+<div id="analytics-data"
      data-attendance-labels='{!! json_encode($attendanceLabels ?? ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]) !!}'
      data-attendance-values='{!! json_encode($attendanceData ?? [0, 0, 0, 0, 0, 0, 0]) !!}'>
 </div>
@@ -233,7 +236,7 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
-                scales: { 
+                scales: {
                     y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' } },
                     x: { grid: { display: false } }
                 }
@@ -248,9 +251,9 @@
                 labels: ['A (75+)', 'B (65-74)', 'C (50-64)', 'F (<40)'],
                 datasets: [{
                     data: [
-                        parseInt("{{ $gradesDist['A'] ?? 0 }}"), 
-                        parseInt("{{ $gradesDist['B'] ?? 0 }}"), 
-                        parseInt("{{ $gradesDist['C'] ?? 0 }}"), 
+                        parseInt("{{ $gradesDist['A'] ?? 0 }}"),
+                        parseInt("{{ $gradesDist['B'] ?? 0 }}"),
+                        parseInt("{{ $gradesDist['C'] ?? 0 }}"),
                         parseInt("{{ $gradesDist['F'] ?? 0 }}")
                     ],
                     backgroundColor: ['#198754', '#0dcaf0', '#ffc107', '#dc3545'],
@@ -262,7 +265,7 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
-                scales: { 
+                scales: {
                     y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' } },
                     x: { grid: { display: false } }
                 }
