@@ -91,10 +91,11 @@
                 <a href="{{ url('/student/dashboard') }}" class="{{ request()->is('student/dashboard') ? 'active' : '' }}">
                     <i class="bi bi-house-door me-2"></i> Student Home
                 </a>
-                <a href="#" class="{{ request()->is('student/attendance*') ? 'active' : '' }}">
-                    <i class="bi bi-calendar2-check me-2"></i> My Attendance
+                <a href="{{ route('student.attendance') }}" class="{{ request()->routeIs('student.attendance') ? 'active' : '' }}">
+                    <i class="bi bi-calendar-check me-2"></i> My Attendance
                 </a>
-                <a href="#" class="{{ request()->is('student/modules*') ? 'active' : '' }}">
+                <!-- 🎯 Fixed Course Modules Route -->
+                <a href="{{ route('student.modules') }}" class="{{ request()->routeIs('student.modules') ? 'active' : '' }}">
                     <i class="bi bi-journal-text me-2"></i> Course Modules
                 </a>
                 <a href="{{ route('student.results') }}" class="{{ request()->routeIs('student.results') ? 'active' : '' }}">

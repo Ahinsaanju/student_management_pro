@@ -23,4 +23,9 @@ class Result extends Model
     {
         return $this->belongsTo(Student::class, 'student_id');
     }
+    
+    public function module()
+    {
+        return $this->belongsTo(module::class); // හෝ Module::class
+    }
 }

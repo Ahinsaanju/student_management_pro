@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Student;
+use App\Models\Attendance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Auth;
 
 class StudentController extends Controller
 {
@@ -89,7 +91,8 @@ public function results()
     $user = auth()->user();
     
     $student = Student::where('user_id', $user->id)
-                      ->with('results.subject') 
+                      ->orWhere('email', $user->email)
+                      ->with('results') // Relationship එක model එකේ නැත්නම් කෙළින්ම 'results' විතරක් load කරන්න
                       ->first();
 
     return view('student.results', compact('student'));
@@ -134,5 +137,56 @@ public function exportPdf()
     $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.reports.students_pdf', compact('students'));
 
     return $pdf->download('students_list_' . date('Y-m-d') . '.pdf');
+}
+public function myAttendance()
+{
+    $user = Auth::user();
+
+    
+    $student = Student::where('user_id', $user->id)
+                ->orWhere('email', $user->email)
+                ->first();
+
+    if (!$student) {
+        return view('student.attendance.index', [
+            'attendances' => collect(),
+            'error' => 'ඔබගේ Profile එක Database එකේ හමු වූයේ නැත.'
+        ]);
+    }
+
+    
+    if (!$student->user_id) {
+        $student->update(['user_id' => $user->id]);
+    }
+
+    $attendances = Attendance::with('course')
+        ->where('student_id', $student->id) 
+        ->latest()
+        ->get();
+
+    return view('student.attendance.index', compact('attendances'));
+}
+public function modules()
+{
+    $user = Auth::user();
+
+    $student = Student::where('user_id', $user->id)
+                ->orWhere('email', $user->email)
+                ->first();
+
+    if (!$student) {
+        $modules = collect();
+        $course = null;
+        return view('student.modules.index', compact('modules', 'student', 'course'));
+    }
+
+    $course = \App\Models\Course::where('course_name', $student->course)
+                ->orWhere('course_code', $student->course)
+                ->with('modules')
+                ->first();
+
+    $modules = $course ? $course->modules : collect();
+
+    return view('student.modules.index', compact('modules', 'student', 'course'));
 }
 }

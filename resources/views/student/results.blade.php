@@ -1,17 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Exam Results - Studora</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-</head>
-<body class="bg-light">
+@extends('layouts.app')
 
-<div class="container py-5">
+@section('content')
+<div class="container-fluid py-3">
     <div class="row justify-content-center">
-        <div class="col-md-10">
+        <div class="col-md-11">
 
             <!-- Page Title Card -->
             <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
@@ -45,8 +37,8 @@
                             @if(isset($student) && $student->results && $student->results->count() > 0)
                                 @foreach($student->results as $result)
                                     <tr>
-                                        <td class="fw-bold">{{ $result->subject->code ?? 'N/A' }}</td>
-                                        <td>{{ $result->subject->name ?? 'N/A' }}</td>
+                                        <td class="fw-bold">{{ $result->subject->code ?? $result->module_code ?? 'N/A' }}</td>
+                                        <td>{{ $result->subject->name ?? $result->module_name ?? 'N/A' }}</td>
                                         <td class="text-center fw-semibold">{{ $result->marks }}</td>
                                         <td class="text-center">
                                             <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill">
@@ -78,7 +70,4 @@
         </div>
     </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+@endsection

@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\TeacherController as AdminTeacherController;
 use App\Http\Controllers\Admin\CourseController;
 use App\Http\Controllers\Teacher\AttendanceController;
 use App\Http\Controllers\Teacher\GradeController;
+use App\Http\Controllers\Admin\ModuleController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -20,8 +21,8 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// 🔒 Authenticated Users (Admin, Teacher, Student) සඳහා Protected Routes
-Route::middleware(['auth', 'verified'])->group(function () {
+/// 🔒 Authenticated Users (Admin, Teacher, Student) සඳහා Protected Routes
+Route::middleware(['auth', 'verified', \App\Http\Middleware\PreventBackHistory::class])->group(function () {
 
     // 🔀 Central Role-Based Redirector
     Route::get('/dashboard', function () {
@@ -37,13 +38,51 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
 
 
-    // 👨‍🎓 Student Routes
+    // 👨‍🎓 Student Routes Group
     Route::prefix('student')->name('student.')->group(function () {
+        
+        // 🎯 DYNAMIC STUDENT DASHBOARD ROUTE
         Route::get('/dashboard', function () {
-            return view('student.dashboard');
+            $user = auth()->user();
+
+            // Logged in Student ගේ Profile එක අරගැනීම
+            $student = \App\Models\Student::where('user_id', $user->id)
+                        ->orWhere('email', $user->email)
+                        ->first();
+
+            if (!$student) {
+                return view('student.dashboard', [
+                    'modulesCount' => 0,
+                    'overallAttendance' => 0,
+                    'modules' => collect(),
+                    'student' => null,
+                    'course' => null
+                ]);
+            }
+
+            // Student ගේ Course එකට අදාළ Details සහ Modules ගැනීම
+            $course = \App\Models\Course::where('course_name', $student->course)
+                        ->orWhere('course_code', $student->course)
+                        ->with('modules')
+                        ->first();
+
+            $modules = $course ? $course->modules : collect();
+            $modulesCount = $modules->count();
+
+            // Student ගේ Overall Attendance Percentage එක ගණනය කිරීම
+            $totalAttendance = \App\Models\Attendance::where('student_id', $student->id)->count();
+            $presentAttendance = \App\Models\Attendance::where('student_id', $student->id)
+                                    ->where('status', 'present')
+                                    ->count();
+
+            $overallAttendance = $totalAttendance > 0 ? round(($presentAttendance / $totalAttendance) * 100) : 0;
+
+            return view('student.dashboard', compact('modulesCount', 'overallAttendance', 'modules', 'student', 'course'));
         })->name('dashboard');
 
         Route::get('/results', [StudentController::class, 'results'])->name('results');
+        Route::get('/my-attendance', [StudentController::class, 'myAttendance'])->name('attendance');
+        Route::get('/modules', [StudentController::class, 'modules'])->name('modules');
     });
 
 
@@ -101,11 +140,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/attendance/{id}', [DashboardController::class, 'updateAttendance'])->name('attendance.update');
         Route::delete('/attendance/{id}', [DashboardController::class, 'destroyAttendance'])->name('attendance.destroy');
 
-        // 🎯 FIX: Exam Grades Routes වල නම Blade එකට ගැලපෙන්න වෙනස් කළා
+        // Exam Grades Routes
         Route::get('/exam-grades', [DashboardController::class, 'examGrades'])->name('exam.grades');
         Route::get('/exam-grades/{id}/edit', [DashboardController::class, 'editGrade'])->name('exam.grades.edit');
         Route::put('/exam-grades/{id}', [DashboardController::class, 'updateGrade'])->name('exam.grades.update');
         Route::delete('/exam-grades/{id}', [DashboardController::class, 'destroyGrade'])->name('exam.grades.destroy');
+
+        Route::get('/courses/{course}/modules', [ModuleController::class, 'index'])->name('courses.modules.index');
+        Route::post('/courses/{course}/modules', [ModuleController::class, 'store'])->name('courses.modules.store');
+        Route::delete('/modules/{module}', [ModuleController::class, 'destroy'])->name('modules.destroy');
+
     });
 
 

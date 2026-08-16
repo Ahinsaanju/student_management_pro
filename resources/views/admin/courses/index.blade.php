@@ -5,7 +5,7 @@
 
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
+            <i class="bi bi-check-circle me-1"></i> {{ session('success') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
@@ -46,7 +46,7 @@
         <!-- 📋 Course List Table -->
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm p-4 bg-white" style="border-radius: 16px;">
-                <h5 class="fw-bold text-dark mb-4"><i class="bi bi-journal-text text-primary me-2"></i>Course Modules</h5>
+                <h5 class="fw-bold text-dark mb-4"><i class="bi bi-journal-text text-primary me-2"></i>All Courses</h5>
                 
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
@@ -56,34 +56,46 @@
                                 <th>Course Title</th>
                                 <th>Credits</th>
                                 <th>Semester</th>
+                                <th class="text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($courses as $course)
-                            <tr>
-                                <td class="fw-semibold text-primary">{{ $course->course_code }}</td>
-                                <td>{{ $course->course_name }}</td>
-                                <td><span class="badge bg-secondary rounded-pill px-3">{{ $course->credits }} Credits</span></td>
-                                <td>{{ $course->semester }}</td>
-                                <td class="text-center">
-                                    <div class="d-flex justify-content-center gap-2">
-                                        <a href="{{ route('admin.courses.edit', $course->id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
-                                            <i class="bi bi-pencil-square"></i> Edit
-                                        </a>
-                                        <form action="{{ route('admin.courses.destroy', $course->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this course?');">
-                                            @csrf @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">
-                                                <i class="bi bi-trash"></i> Delete
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="4" class="text-center text-muted py-4">No courses added yet.</td>
-                            </tr>
-                            @endforelse
+                            @if(isset($courses) && count($courses) > 0)
+                                @foreach($courses as $course)
+                                <tr>
+                                    <td class="fw-semibold text-primary">{{ $course->course_code }}</td>
+                                    <td>{{ $course->course_name }}</td>
+                                    <td><span class="badge bg-secondary rounded-pill px-3">{{ $course->credits }} Credits</span></td>
+                                    <td>{{ $course->semester }}</td>
+                                    <td class="text-center">
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <!-- 🎯 Manage Modules Button -->
+                                            <a href="{{ route('admin.courses.modules.index', $course->id) }}" class="btn btn-sm btn-outline-info rounded-pill px-3">
+                                                <i class="bi bi-journal-plus"></i> Modules
+                                            </a>
+
+                                            <!-- ✏️ Edit Course Button -->
+                                            <a href="{{ route('admin.courses.edit', $course->id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                                <i class="bi bi-pencil-square"></i> Edit
+                                            </a>
+
+                                            <!-- 🗑️ Delete Course Form -->
+                                            <form action="{{ route('admin.courses.destroy', $course->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this course?');">
+                                                @csrf 
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                                                    <i class="bi bi-trash"></i> Delete
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            @else
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">No courses added yet.</td>
+                                </tr>
+                            @endif
                         </tbody>
                     </table>
                 </div>
