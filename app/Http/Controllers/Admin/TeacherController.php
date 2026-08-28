@@ -8,6 +8,7 @@ use App\Models\Teacher;
 use App\Models\Course;
 use App\Models\Student;
 use App\Models\Grade;
+use App\Models\Module;
 use App\Models\Attendence;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -17,81 +18,34 @@ use Illuminate\Support\Facades\Hash;
 class TeacherController extends Controller
 {
     public function dashboard()
-    {
-        // Logged-in Teacher Details (User + Teacher relation)
-        $user = Auth::user();
-        
-        // 1. Assigned Modules Count
-        $assignedModulesCount = Course::count();
+{
+    $user = Auth::user();
 
-        // 2. Total Active Students Count
+    // 1. Logged-in Teacher Profile එක ගන්නවා
+    $teacher = Teacher::where('user_id', $user->id)->first();
+
+    if ($teacher) {
+        // 1. Teacher ට Assign කරලා තියෙන Modules ගණන
+        $assignedModulesCount = Module::where('teacher_id', $teacher->id)->count();
+
+        // 2. Active Students ගණන
         $totalStudentsCount = Student::where('status', 'active')->count();
 
-        // 3. Pending Assessments Count 
+        // 3. Pending Assessments Count (Marks දාලා නැති records)
         $pendingAssessmentsCount = Grade::whereNull('marks')->count();
-
-        return view('teacher.dashboard', compact(
-            'user',
-            'assignedModulesCount',
-            'totalStudentsCount',
-            'pendingAssessmentsCount'
-        ));
+    } else {
+        $assignedModulesCount = 0;
+        $totalStudentsCount = 0;
+        $pendingAssessmentsCount = 0;
     }
 
-    public function index()
-    {
-        $teachers = Teacher::with('user')->latest()->get();
-        return view('admin.teachers.index', compact('teachers'));
-    }
-
-    public function store(Request $request)
-    {
-        // 1. Validation Logic
-        $request->validate([
-            'name'         => 'required|string|max:255',
-            'email'        => 'required|string|email|max:255|unique:users,email',
-            'teacher_code' => 'required|string|unique:teachers,teacher_code',
-            'department'   => 'required|string',
-            'designation'  => 'required|string',
-            'phone'        => 'nullable|string',
-        ]);
-
-        // 2. Safe Database Operations using Transactions
-        DB::transaction(function () use ($request) {
-
-            // Create User Account (Auth)
-            $user = User::create([
-                'name'     => $request->name,
-                'email'    => $request->email,
-                'password' => Hash::make('teacher123'), // Default password
-                'role'     => 'teacher',
-            ]);
-
-            // Create Teacher Profile Record
-            Teacher::create([
-                'user_id'      => $user->id,
-                'teacher_code' => $request->teacher_code,
-                'department'   => $request->department,
-                'designation'  => $request->designation,
-                'phone'        => $request->phone,
-            ]);
-        });
-
-        // 3. Response Success Message
-        return redirect()->back()->with('success', 'Teacher registered successfully! Default password is: teacher123');
-    }
-
-    public function edit($teacher_code)
-    {
-        
-        $teacher = Teacher::with('user')
-            ->where('id', $teacher_code)
-            ->orWhere('teacher_code', $teacher_code)
-            ->firstOrFail();
-
-        return view('admin.teachers.edit', compact('teacher'));            
-    }
-
+    return view('teacher.dashboard', compact(
+        'user',
+        'assignedModulesCount',
+        'totalStudentsCount',
+        'pendingAssessmentsCount'
+    ));
+}
     public function update(Request $request, $teacher_code)
     {
        

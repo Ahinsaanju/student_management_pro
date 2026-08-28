@@ -28,14 +28,17 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-semibold text-muted">Credits</label>
-                        <input type="number" name="credits" class="form-control" placeholder="e.g. 4" min="1" max="6" required>
+                        <!-- 👈 max="6" අයින් කර ඇත -->
+                        <input type="number" name="credits" class="form-control" placeholder="e.g. 4" min="1" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-semibold text-muted">Semester</label>
                         <select name="semester" class="form-select" required>
                             <option value="" selected disabled>Select Semester</option>
-                            <option value="Semester 1">Semester 1</option>
-                            <option value="Semester 2">Semester 2</option>
+                            <!-- 👈 Semester 1 සිට 12 දක්වා Dynamic Loop එකක් -->
+                            @for ($i = 1; $i <= 12; $i++)
+                                <option value="Semester {{ $i }}">Semester {{ $i }}</option>
+                            @endfor
                         </select>
                     </div>
                     <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-bold mt-2">Add Course</button>

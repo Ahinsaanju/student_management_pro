@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\CourseController;
 use App\Http\Controllers\Teacher\AttendanceController;
 use App\Http\Controllers\Teacher\GradeController;
 use App\Http\Controllers\Admin\ModuleController;
+use App\Http\Controllers\Teacher\ModuleController as TeacherModuleController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -21,7 +22,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-/// 🔒 Authenticated Users (Admin, Teacher, Student) සඳහා Protected Routes
+// 🔒 Authenticated Users (Admin, Teacher, Student) සඳහා Protected Routes
 Route::middleware(['auth', 'verified', \App\Http\Middleware\PreventBackHistory::class])->group(function () {
 
     // 🔀 Central Role-Based Redirector
@@ -90,25 +91,17 @@ Route::middleware(['auth', 'verified', \App\Http\Middleware\PreventBackHistory::
     Route::prefix('teacher')->name('teacher.')->group(function () {
         Route::get('/dashboard', [AdminTeacherController::class, 'dashboard'])->name('dashboard');
 
-        // 📚 My Modules Route
-        Route::get('/modules', function () {
-            $courses = \App\Models\Course::all();
-            return view('teacher.modules.index', compact('courses'));
-        })->name('modules.index');
+        // 📚 Teacher Modules Route
+        Route::get('/modules', [TeacherModuleController::class, 'index'])->name('modules.index');
 
         // Attendance Routes
         Route::get('/attendance', function () {
             return view('teacher.attendance.index');
         })->name('attendance.index');
 
-        Route::get('/attendance/create', function () {
-            $courses = \App\Models\Course::all();
-            $students = \App\Models\Student::all();
-            return view('teacher.attendance.create', compact('courses', 'students'));
-        })->name('attendance.create');
-
+        Route::get('/attendance/create', [AttendanceController::class, 'create'])->name('attendance.create');
         Route::post('/attendance/store', [AttendanceController::class, 'store'])->name('attendance.store');
-
+        
         // Grades / Marks Routes
         Route::get('/grades', function () {
             return view('teacher.grades.index');
@@ -116,6 +109,9 @@ Route::middleware(['auth', 'verified', \App\Http\Middleware\PreventBackHistory::
 
         Route::get('/grades/create', [GradeController::class, 'create'])->name('grades.create');
         Route::post('/grades/store', [GradeController::class, 'store'])->name('grades.store');
+        
+        // Dynamic AJAX Route for Students
+        Route::get('/get-students-by-course/{courseId}', [GradeController::class, 'getStudentsByCourse'])->name('get.students.by.course');
     });
 
 
@@ -146,8 +142,11 @@ Route::middleware(['auth', 'verified', \App\Http\Middleware\PreventBackHistory::
         Route::put('/exam-grades/{id}', [DashboardController::class, 'updateGrade'])->name('exam.grades.update');
         Route::delete('/exam-grades/{id}', [DashboardController::class, 'destroyGrade'])->name('exam.grades.destroy');
 
+        // 📚 Course Modules Routes
         Route::get('/courses/{course}/modules', [ModuleController::class, 'index'])->name('courses.modules.index');
         Route::post('/courses/{course}/modules', [ModuleController::class, 'store'])->name('courses.modules.store');
+        Route::get('/modules/{module}/edit', [ModuleController::class, 'edit'])->name('modules.edit');
+        Route::put('/modules/{module}', [ModuleController::class, 'update'])->name('modules.update');
         Route::delete('/modules/{module}', [ModuleController::class, 'destroy'])->name('modules.destroy');
 
     });

@@ -37,6 +37,17 @@
                         <label class="form-label">Credits</label>
                         <input type="number" name="credits" class="form-control" value="3" required>
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Assign Lecturer (Teacher)</label>
+                        <select name="teacher_id" class="form-select">
+                            <option value="" selected>-- Select Lecturer (Optional) --</option>
+                            @foreach($teachers as $teacher)
+                                <option value="{{ $teacher->id }}">
+                                    {{ $teacher->user->name ?? 'Teacher #' . $teacher->id }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
                     <button type="submit" class="btn btn-primary w-100">Add Module</button>
                 </form>
             </div>
@@ -50,6 +61,7 @@
                         <tr>
                             <th>Code</th>
                             <th>Name</th>
+                            <th>Lecturer</th>
                             <th>Credits</th>
                             <th class="text-end">Action</th>
                         </tr>
@@ -58,21 +70,33 @@
                         @if(isset($modules) && count($modules) > 0)
                             @foreach($modules as $module)
                                 <tr>
-                                    <td>{{ $module->module_code }}</td>
+                                    <td><span class="badge bg-light text-dark fw-semibold">{{ $module->module_code }}</span></td>
                                     <td>{{ $module->name }}</td>
+                                    <td>
+                                        @if($module->teacher && $module->teacher->user)
+                                            <span class="badge bg-info-subtle text-info fw-semibold px-2 py-1">
+                                                <i class="bi bi-person-badge me-1"></i>{{ $module->teacher->user->name }}
+                                            </span>
+                                        @else
+                                            <span class="badge bg-secondary-subtle text-secondary">Not Assigned</span>
+                                        @endif
+                                    </td>
                                     <td>{{ $module->credits }}</td>
                                     <td class="text-end">
+                                        <a href="{{ route('admin.modules.edit', $module->id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                            <i class="bi bi-pencil-square"></i> Edit
+                                        </a>
                                         <form action="{{ route('admin.modules.destroy', $module->id) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete?')">Delete</button>
+                                            <button type="submit" class="btn btn-sm btn-danger rounded-pill px-3" onclick="return confirm('Delete this module?')">Delete</button>
                                         </form>
                                     </td>
                                 </tr>
                             @endforeach
                         @else
                             <tr>
-                                <td colspan="4" class="text-center py-3 text-muted">No modules found.</td>
+                                <td colspan="5" class="text-center py-3 text-muted">No modules found.</td>
                             </tr>
                         @endif
                     </tbody>

@@ -34,9 +34,9 @@
                         <label class="form-label fw-semibold text-muted">Department</label>
                         <select name="department" class="form-select border-0 bg-light py-2" required>
                             <option value="" selected disabled>Select Department</option>
-                            <option value="Information Technology">Information Technology</option>
-                            <option value="Software Engineering">Software Engineering</option>
-                            <option value="Computer Science">Computer Science</option>
+                            <option value="Information Technology">IT</option>
+                            <option value="Software Engineering">Management</option>
+                            <option value="Computer Science">Languages</option>
                         </select>
                     </div>
                     <div class="mb-3">

@@ -78,7 +78,7 @@
             <div class="card border-0 shadow-sm p-3 bg-white" style="border-radius: 16px;">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <h6 class="text-muted fw-semibold mb-2">Active Modules</h6>
+                        <h6 class="text-muted fw-semibold mb-2">Active Courses</h6>
                         <h3 class="fw-bold text-dark mb-0">{{ $totalCourses }}</h3>
                     </div>
                     <div class="bg-success bg-opacity-10 p-3 rounded-4"><i class="bi bi-book text-success fs-3"></i></div>

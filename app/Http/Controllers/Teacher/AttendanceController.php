@@ -14,12 +14,25 @@ class AttendanceController extends Controller
     public function create()
     {
         $courses = Course::all(); // get all courses
-        $students = Student::with('user')->latest()->get(); // get all students
-        
-        return view('teacher.attendance.create', compact('courses', 'students'));
+        return view('teacher.attendance.create', compact('courses'));
     }
 
-    // 2. mared attendance save to database
+    // 2. AJAX Filter Method 
+    public function getStudentsByCourse($courseId)
+    {
+        $course = Course::findOrFail($courseId);
+
+        
+        $students = Student::with('user')
+            ->where('course', $course->course_name)
+            ->orWhere('course', $course->course_code)
+            ->latest()
+            ->get();
+
+        return response()->json($students);
+    }
+
+    // 3. Marked attendance save to database
     public function store(Request $request)
     {
         $request->validate([
@@ -31,7 +44,6 @@ class AttendanceController extends Controller
         $courseId = $request->course_id;
         $date = $request->date;
 
-        
         foreach ($request->attendance as $studentId => $status) {   
             Attendance::updateOrCreate(
                 [

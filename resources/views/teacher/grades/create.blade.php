@@ -34,64 +34,101 @@
     <div class="card border-0 shadow-sm p-4 bg-white" style="border-radius: 16px;">
         <h4 class="fw-bold text-dark mb-4"><i class="bi bi-file-earmark-spreadsheet text-primary me-2"></i>Submit Exam Marks</h4>
         
-        <!-- ⚠️ Form Tag Starts Here -->
+        <!-- Form Starts -->
         <form action="{{ route('teacher.grades.store') }}" method="POST">
             @csrf
             
-            <!-- Course Selector -->
+            <!-- Module Selector -->
             <div class="row mb-4">
                 <div class="col-md-6">
-                    <label class="form-label fw-semibold text-muted">Select Course / Module</label>
-                    <select name="course_id" class="form-select" required>
+                    <label class="form-label fw-semibold text-muted">Select Module</label>
+                    <select id="module_select" name="module_id" class="form-select" required>
                         <option value="" selected disabled>Choose Module</option>
-                        @foreach($courses as $course)
-                            <option value="{{ $course->id }}" {{ old('course_id') == $course->id ? 'selected' : '' }}>
-                                {{ $course->course_code }} - {{ $course->course_name }}
+                        @foreach($modules as $module)
+                            <option value="{{ $module->id }}" {{ old('module_id') == $module->id ? 'selected' : '' }}>
+                                {{ $module->module_code }} - {{ $module->name ?? $module->module_name }}
                             </option>
                         @endforeach
                     </select>
                 </div>
             </div>
 
-            <!-- Student Marks Table -->
+            <!-- Student Marks Table Wrapper -->
             <div class="table-responsive mb-4">
                 <table class="table table-hover align-middle">
                     <thead class="table-light text-muted">
                         <tr>
+                            <th style="width: 60px;">#</th>
                             <th>Student ID</th>
                             <th>Student Name</th>
                             <th style="width: 200px;">Marks (%)</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        @forelse($students as $student)
+                    <tbody id="student_table_body">
                         <tr>
-                            <td class="fw-semibold">#{{ $student->student_reg_no ?? $student->id }}</td>
-                            <td>{{ $student->user->name ?? 'N/A' }}</td>
-                            <td>
-                                <div class="input-group input-group-sm">
-                                    <input type="number" name="marks[{{ $student->id }}]" class="form-control" placeholder="Enter marks" min="0" max="100" step="0.01">
-                                    <span class="input-group-text">%</span>
-                                </div>
+                            <td colspan="4" class="text-center text-muted py-4">
+                                <i class="bi bi-info-circle me-1"></i> Please select a module above to load registered students.
                             </td>
                         </tr>
-                        @empty
-                        <tr>
-                            <td colspan="3" class="text-center text-muted py-4">No registered students found.</td>
-                        </tr>
-                        @endforelse
                     </tbody>
                 </table>
             </div>
 
-            <!-- Submit Button (MUST BE INSIDE <form>) -->
+            <!-- Submit Button -->
             <div class="text-end">
                 <button type="submit" class="btn btn-primary rounded-pill px-5 py-2 fw-bold shadow-sm">Submit Grades</button>
             </div>
 
         </form>
-        <!-- ⚠️ Form Tag Ends Here -->
+        <!-- Form Ends -->
 
     </div>
 </div>
+
+<script>
+document.getElementById('module_select').addEventListener('change', function () {
+    let moduleId = this.value;
+    let studentTableBody = document.getElementById('student_table_body');
+
+    if (!moduleId) return;
+
+    // AJAX Request to fetch students by module ID
+    fetch(`/teacher/get-students-by-course/${moduleId}`)
+        .then(response => response.json())
+        .then(data => {
+            studentTableBody.innerHTML = '';
+
+            if (data.length === 0) {
+                studentTableBody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-3">No students found for this module.</td></tr>`;
+                return;
+            }
+
+            data.forEach((student, index) => {
+                let studentName = student.user ? student.user.name : (student.name || 'N/A');
+                
+                // Exact student_reg_no DB column value 
+                let regNo = student.student_reg_no || student.reg_no || student.id;
+
+                let row = `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${regNo}</td>
+                        <td>${studentName}</td>
+                        <td>
+                            <input type="number" 
+                                   name="marks[${student.id}]" 
+                                   class="form-control form-control-sm" 
+                                   placeholder="Enter Marks" 
+                                   min="0" max="100" step="0.01">
+                        </td>
+                    </tr>
+                `;
+                studentTableBody.innerHTML += row;
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching students:', error);
+        });
+});
+</script>
 @endsection
