@@ -4,22 +4,22 @@ StuDora is a full-stack Laravel web application designed for managing student re
 
 ---
 
-## ✨ Core Features
+##  Core Features
 
-### 👨‍💼 Admin Management
+###  Admin Management
 - Multi-tier Role-Based Access Control (Admin, Teacher, Student).
 - Student, Teacher, and Course record management.
 - System-wide data export in **CSV** and **PDF** formats.
 
-### 📚 Learning Management System (LMS)
+###  Learning Management System (LMS)
 - Dedicated Learning Materials portal categorized by Department and Course.
 - Support for lecture slides, PDFs, and external resource URLs.
 
-### 💳 Digital Student ID
+###  Digital Student ID
 - Dynamic QR code generation using `simple-qrcode`.
 - Printable Sri Lankan NIC-style horizontal ID card interface.
 
-### 📊 Academic & Attendance Tracking
+###  Academic & Attendance Tracking
 - Dynamic AJAX-based student attendance marking per module.
 - Exam marks entry and grade calculation.
 
