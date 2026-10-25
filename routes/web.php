@@ -9,6 +9,7 @@ use App\Http\Controllers\Teacher\AttendanceController;
 use App\Http\Controllers\Teacher\GradeController;
 use App\Http\Controllers\Admin\ModuleController;
 use App\Http\Controllers\Teacher\ModuleController as TeacherModuleController;
+use App\Http\Controllers\LearningMaterialController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -110,7 +111,8 @@ Route::middleware(['auth', 'verified', \App\Http\Middleware\PreventBackHistory::
         Route::get('/grades/create', [GradeController::class, 'create'])->name('grades.create');
         Route::post('/grades/store', [GradeController::class, 'store'])->name('grades.store');
         
-        // Dynamic AJAX Route for Students
+        // 🔄 Dynamic AJAX Routes for Students (By Module and By Course)
+        Route::get('/get-students-by-module/{moduleId}', [AttendanceController::class, 'getStudentsByModule'])->name('get.students.by.module');
         Route::get('/get-students-by-course/{courseId}', [GradeController::class, 'getStudentsByCourse'])->name('get.students.by.course');
     });
 
@@ -149,6 +151,13 @@ Route::middleware(['auth', 'verified', \App\Http\Middleware\PreventBackHistory::
         Route::put('/modules/{module}', [ModuleController::class, 'update'])->name('modules.update');
         Route::delete('/modules/{module}', [ModuleController::class, 'destroy'])->name('modules.destroy');
 
+        // 🎴 Digital Student ID Card Route
+        Route::get('/students/{id}/id-card', [StudentController::class, 'showDigitalCard'])->name('students.id_card');
+
+        // 📁 Learning Materials Management Routes
+        Route::get('/materials', [LearningMaterialController::class, 'index'])->name('materials.index');
+        Route::post('/materials/store', [LearningMaterialController::class, 'store'])->name('materials.store');
+        Route::delete('/materials/{id}', [LearningMaterialController::class, 'destroy'])->name('materials.destroy');
     });
 
 

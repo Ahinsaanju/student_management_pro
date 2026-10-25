@@ -17,7 +17,7 @@
             <h2 class="fw-bold text-dark mb-1">All Student Exam Grades</h2>
             <p class="text-muted">View, edit and monitor overall academic performance and marks.</p>
         </div>
-        <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary rounded-pill px-4 fw-semibold shadow-sm">
+        <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary rounded-pill px-4 fw-semibold shadow-sm">
             <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
         </a>
     </div>
@@ -29,35 +29,47 @@
                 <thead class="table-light text-muted fs-7">
                     <tr>
                         <th>Student Name</th>
-                        <th>Module Code</th>
+                        <th>Module / Course Name</th>
                         <th>Marks</th>
                         <th class="text-center">Grade</th>
-                        <th class="text-center">Action</th> <!-- 👈 අලුත් Column එක -->
+                        <th class="text-center">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($examGrades as $grade)
                     <tr>
                         <td class="fw-bold text-dark">{{ $grade->student->user->name ?? 'N/A' }}</td>
-                        <td><span class="fw-semibold text-primary">{{ $grade->course->course_code ?? 'N/A' }}</span></td>
+                        
+                        <!-- 🎓 Module Code & Module/Subject Name -->
+                        <td>
+                            <span class="fw-bold text-primary">
+                                {{ $grade->module->module_code ?? $grade->course->course_code ?? $grade->subject_code ?? '' }}
+                            </span>
+                            <span class="text-dark fw-semibold ms-1">
+                                {{ $grade->module->name ?? $grade->module->module_name ?? $grade->course->course_name ?? $grade->subject_name ?? $grade->subject ?? 'N/A' }}
+                            </span>
+                        </td>
+
                         <td class="fw-bold text-secondary">{{ $grade->marks }}%</td>
+                        
                         <td class="text-center">
                             <span class="badge bg-primary rounded-pill px-4 py-2 fs-7 shadow-sm">
                                 {{ $grade->grade }}
                             </span>
                         </td>
-                        <!-- 🚀 Edit / Delete returns -->
+
+                        <!-- 🚀 Edit / Delete Actions -->
                         <td class="text-center">
                             <div class="d-flex justify-content-center gap-2">
                                 <a href="{{ route('admin.exam.grades.edit', $grade->id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold">
-                                    <i class="bi bi-pencil-square"></i> Edit
+                                    <i class="bi bi-pencil-square me-1"></i> Edit
                                 </a>
                                 
                                 <form action="{{ route('admin.exam.grades.destroy', $grade->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this grading record?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-semibold">
-                                        <i class="bi bi-trash"></i> Delete
+                                        <i class="bi bi-trash me-1"></i> Delete
                                     </button>
                                 </form>
                             </div>

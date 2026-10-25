@@ -46,6 +46,12 @@ class TeacherController extends Controller
         'pendingAssessmentsCount'
     ));
 }
+public function index()
+    {
+        $teachers = Teacher::all(); 
+        
+        return view('admin.teachers.index', compact('teachers')); 
+    }
     public function update(Request $request, $teacher_code)
     {
        

@@ -37,19 +37,29 @@
                             @if(isset($student) && $student->results && $student->results->count() > 0)
                                 @foreach($student->results as $result)
                                     <tr>
-                                        <td class="fw-bold">{{ $result->subject->code ?? $result->module_code ?? 'N/A' }}</td>
-                                        <td>{{ $result->subject->name ?? $result->module_name ?? 'N/A' }}</td>
-                                        <td class="text-center fw-semibold">{{ $result->marks }}</td>
+                                        <!-- 📘 Dynamic Subject/Module Code Fallbacks -->
+                                        <td class="fw-bold text-primary">
+                                            {{ $result->course->course_code ?? $result->module->module_code ?? $result->module->code ?? $result->subject->code ?? $result->subject_code ?? 'N/A' }}
+                                        </td>
+                                        
+                                        <!-- 📚 Dynamic Subject/Module Name Fallbacks -->
+                                        <td class="fw-semibold text-dark">
+                                            {{ $result->course->course_name ?? $result->module->module_name ?? $result->module->name ?? $result->subject->name ?? $result->subject_name ?? 'N/A' }}
+                                        </td>
+                                        
+                                        <td class="text-center fw-semibold">{{ number_format($result->marks, 2) }}</td>
+                                        
                                         <td class="text-center">
-                                            <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill">
+                                            <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill fw-bold">
                                                 {{ $result->grade }}
                                             </span>
                                         </td>
+                                        
                                         <td class="text-center">
                                             @if($result->marks >= 40)
-                                                <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill">Pass</span>
+                                                <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill fw-semibold">Pass</span>
                                             @else
-                                                <span class="badge bg-danger-subtle text-danger px-3 py-2 rounded-pill">Fail</span>
+                                                <span class="badge bg-danger-subtle text-danger px-3 py-2 rounded-pill fw-semibold">Fail</span>
                                             @endif
                                         </td>
                                     </tr>

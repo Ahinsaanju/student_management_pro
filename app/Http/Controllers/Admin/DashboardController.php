@@ -6,8 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\Course;
+use App\Models\Module;
 use App\Models\Attendance;
-use App\Models\Result; // 
+use App\Models\Result;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -22,8 +23,8 @@ class DashboardController extends Controller
         $totalTeachers = Teacher::count();
         $totalCourses  = Course::count();
 
-        // 1. Recent Attendance Logs Query
-        $attendanceQuery = Attendance::with(['student.user', 'course']);
+        // 1. Recent Attendance Logs Query (Added 'module' relationship)
+        $attendanceQuery = Attendance::with(['student.user', 'course', 'module']);
 
         if ($request->filled('search')) {
             $attendanceQuery->where(function($q) use ($search) {
@@ -32,6 +33,10 @@ class DashboardController extends Controller
                 })
                 ->orWhereHas('course', function($courseQuery) use ($search) {
                     $courseQuery->where('course_code', 'like', "%{$search}%");
+                })
+                ->orWhereHas('module', function($moduleQuery) use ($search) {
+                    $moduleQuery->where('module_code', 'like', "%{$search}%")
+                                ->orWhere('name', 'like', "%{$search}%");
                 });
             });
         }
@@ -93,7 +98,8 @@ class DashboardController extends Controller
 
     public function attendanceLogs()
     {
-        $attendanceLogs = Attendance::with(['student.user', 'course'])
+        // Added 'module' relationship
+        $attendanceLogs = Attendance::with(['student.user', 'course', 'module'])
                             ->latest()
                             ->paginate(15);
 
@@ -102,7 +108,6 @@ class DashboardController extends Controller
 
     public function examGrades()
     {
-        
         $examGrades = Result::with('student.user')
                         ->latest('updated_at')
                         ->paginate(15);
@@ -115,20 +120,23 @@ class DashboardController extends Controller
     {
         $attendance = Attendance::findOrFail($id);
         $courses = Course::all();
-        return view('admin.attendance.edit', compact('attendance', 'courses'));
+        $modules = Module::all();
+        return view('admin.attendance.edit', compact('attendance', 'courses', 'modules'));
     }
 
     // Attendance Update Function
     public function updateAttendance(Request $request, $id)
     {
         $request->validate([
-            'course_id' => 'required|exists:courses,id',
+            'module_id' => 'nullable|exists:modules,id',
+            'course_id' => 'nullable|exists:courses,id',
             'date'      => 'required|date',
             'status'    => 'required|in:Present,Absent',
         ]);
 
         $attendance = Attendance::findOrFail($id);
         $attendance->update([
+            'module_id' => $request->module_id,
             'course_id' => $request->course_id,
             'date'      => $request->date,
             'status'    => $request->status,

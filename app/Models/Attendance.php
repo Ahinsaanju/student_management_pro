@@ -9,20 +9,34 @@ class Attendance extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['student_id', 'course_id', 'date', 'status'];
-
-    
-    protected $casts = [
-        'date' => 'date',
+    protected $fillable = [
+        'student_id',
+        'course_id',
+        'module_id',
+        'date',
+        'status',
     ];
 
-    public function student() 
-    { 
-        return $this->belongsTo(Student::class); 
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
+    // 👨‍🎓 Student Relationship (මෙන්න මේ කොටස එකතු කරන්න)
+    public function student()
+    {
+        return $this->belongsTo(Student::class, 'student_id');
     }
 
-    public function course() 
-    { 
-        return $this->belongsTo(Course::class); 
+    // 📚 Module Relationship
+    public function module()
+    {
+        return $this->belongsTo(Module::class, 'module_id');
+    }
+
+    // 📖 Course Relationship
+    public function course()
+    {
+        return $this->belongsTo(Course::class, 'course_id');
     }
 }

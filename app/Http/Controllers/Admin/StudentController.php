@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Hash;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use App\Models\Course;
 
 class StudentController extends Controller
 {
@@ -140,30 +142,24 @@ public function exportPdf()
 }
 public function myAttendance()
 {
-    $user = Auth::user();
+    $user = auth()->user();
 
-    
-    $student = Student::where('user_id', $user->id)
+    $student = \App\Models\Student::where('user_id', $user->id)
                 ->orWhere('email', $user->email)
                 ->first();
 
     if (!$student) {
-        return view('student.attendance.index', [
-            'attendances' => collect(),
-            'error' => 'ඔබගේ Profile එක Database එකේ හමු වූයේ නැත.'
-        ]);
+        return view('student.attendance.index', ['attendances' => collect()]);
     }
 
-    
-    if (!$student->user_id) {
-        $student->update(['user_id' => $user->id]);
-    }
-
-    $attendances = Attendance::with('course')
-        ->where('student_id', $student->id) 
+    // Module සහ Course Relationships සමඟ Fetch කිරීම
+    $attendances = \App\Models\Attendance::with(['module', 'course'])
+        ->where('student_id', $student->id)
+        ->orWhere('student_id', $student->student_reg_no)
         ->latest()
         ->get();
 
+   
     return view('student.attendance.index', compact('attendances'));
 }
 public function modules()
@@ -188,5 +184,27 @@ public function modules()
     $modules = $course ? $course->modules : collect();
 
     return view('student.modules.index', compact('modules', 'student', 'course'));
+}
+
+public function showDigitalCard($id)
+{
+    $student = Student::with('user')->findOrFail($id);
+
+    
+    $course = Course::where('course_name', $student->course)
+                ->orWhere('course_code', $student->course)
+                ->first();
+
+   
+    $qrData = json_encode([
+        'student_id' => $student->id,
+        'reg_no'     => $student->reg_no ?? 'STU-' . str_pad($student->id, 4, '0', STR_PAD_LEFT),
+        'name'       => $student->user->name ?? 'N/A',
+    ]);
+
+    
+    $qrCode = QrCode::size(120)->generate($qrData);
+
+    return view('admin.students.id_card', compact('student', 'course', 'qrCode'));
 }
 }

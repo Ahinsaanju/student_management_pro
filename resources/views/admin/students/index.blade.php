@@ -88,6 +88,9 @@
                                 <td><span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">{{ $student->status }}</span></td>
                                 <td class="text-center">
                                     <div class="d-flex justify-content-center gap-2">
+                                        <a href="{{ route('admin.students.id_card', $student->id) }}" class="btn btn-sm btn-outline-info rounded-pill px-3">
+                                            <i class="bi bi-qr-code me-1"></i> ID Card
+                                        </a>
                                         <a href="{{ route('admin.students.edit', $student->id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
                                             <i class="bi bi-pencil-square"></i> Edit
                                         </a>

@@ -3,9 +3,18 @@
 @section('content')
 <div class="container-fluid py-3">
 
+    <!-- Success Message Alert -->
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
             <i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    <!-- Error Message Alert -->
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ session('error') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
@@ -16,14 +25,16 @@
         <form action="{{ route('teacher.attendance.store') }}" method="POST">
             @csrf
             
-            <!-- Selector Box (Course & Date) -->
+            <!-- Selector Box (Module & Date) -->
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
-                    <label class="form-label fw-semibold text-muted">Select Course / Module</label>
-                    <select id="course_select" name="course_id" class="form-select" required>
+                    <label class="form-label fw-semibold text-muted">Select Module</label>
+                    <select id="module_select" name="module_id" class="form-select" required>
                         <option value="" selected disabled>Choose Module</option>
-                        @foreach($courses as $course)
-                            <option value="{{ $course->id }}">{{ $course->course_code }} - {{ $course->course_name }}</option>
+                        @foreach($modules as $module)
+                            <option value="{{ $module->id }}">
+                                {{ $module->module_code }} - {{ $module->name ?? $module->module_name }}
+                            </option>
                         @endforeach
                     </select>
                 </div>
@@ -46,7 +57,7 @@
                     <tbody id="student_table_body">
                         <tr>
                             <td colspan="3" class="text-center text-muted py-4">
-                                <i class="bi bi-info-circle me-1"></i> Please select a course above to load registered students.
+                                <i class="bi bi-info-circle me-1"></i> Please select a module above to load registered students.
                             </td>
                         </tr>
                     </tbody>
@@ -63,8 +74,8 @@
 
 <!-- Dynamic Student Fetch Script -->
 <script>
-document.getElementById('course_select').addEventListener('change', function () {
-    let courseId = this.value;
+document.getElementById('module_select').addEventListener('change', function () {
+    let moduleId = this.value;
     let tbody = document.getElementById('student_table_body');
 
     // Loading State
@@ -72,19 +83,19 @@ document.getElementById('course_select').addEventListener('change', function () 
         <tr>
             <td colspan="3" class="text-center text-primary py-4">
                 <div class="spinner-border spinner-border-sm me-2" role="status"></div>
-                Loading students for selected course...
+                Loading students for selected module...
             </td>
         </tr>
     `;
 
-    fetch(`/teacher/get-students-by-course/${courseId}`)
+    fetch(`/teacher/get-students-by-module/${moduleId}`)
         .then(response => response.json())
         .then(students => {
             if (students.length === 0) {
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="3" class="text-center text-muted py-4">
-                            No registered students found for this course.
+                            No registered students found for this module.
                         </td>
                     </tr>
                 `;
@@ -94,7 +105,7 @@ document.getElementById('course_select').addEventListener('change', function () 
             let rows = '';
             students.forEach(student => {
                 let studentRegNo = student.student_reg_no ?? student.id;
-                let studentName = student.user ? student.user.name : (student.name ?? 'N/A');
+                let studentName = student.user ? student.user.name : (student.name ?? (student.first_name + ' ' + student.last_name));
 
                 rows += `
                     <tr>

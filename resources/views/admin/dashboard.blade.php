@@ -112,7 +112,21 @@
                             @forelse($attendanceLogs as $log)
                             <tr>
                                 <td class="fw-semibold">{{ $log->student->user->name ?? 'N/A' }}</td>
-                                <td>{{ $log->course->course_code ?? 'N/A' }}</td>
+                                
+                                <td>
+                                    @if($log->module)
+                                        <span class="fw-bold text-primary">
+                                            {{ $log->module->module_code ?? $log->module->name ?? 'Module #' . $log->module->id }}
+                                        </span>
+                                    @elseif($log->course)
+                                        <span class="fw-bold text-secondary">
+                                            {{ $log->course->course_code ?? 'Course #' . $log->course->id }}
+                                        </span>
+                                    @else
+                                        <span class="text-muted">N/A</span>
+                                    @endif
+                                </td>
+
                                 <td>
                                     <span class="badge {{ $log->status == 'Present' ? 'bg-success' : 'bg-danger' }} bg-opacity-10 {{ $log->status == 'Present' ? 'text-success' : 'text-danger' }} rounded-pill px-3">
                                         {{ $log->status }}
@@ -153,9 +167,16 @@
                             @forelse($examGrades as $grade)
                             <tr>
                                 <td class="fw-semibold">{{ $grade->student->user->name ?? 'N/A' }}</td>
-                                <td>{{ $grade->subject_code ?? $grade->subject_name ?? 'N/A' }}</td>
+                                
+                                <!-- 🔵 Blue color added for Exam Grade Module Code -->
+                                <td>
+                                    <span class="fw-bold text-primary">
+                                        {{ $grade->subject_code ?? $grade->subject_name ?? 'N/A' }}
+                                    </span>
+                                </td>
+                                
                                 <td>{{ $grade->marks }}%</td>
-                                <td><span class="badge bg-primary rounded-pill px-3">{{ $grade->grade }}</span></td>
+                                <td><span class="badge bg-primary rounded-circle p-2 px-3 fw-bold">{{ $grade->grade }}</span></td>
                             </tr>
                             @empty
                             <tr>

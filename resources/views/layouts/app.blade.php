@@ -82,6 +82,9 @@
                 <a href="{{ route('admin.exam.grades') }}" class="{{ request()->routeIs('admin.exam.grades') ? 'active' : '' }}">
                     <i class="bi bi-mortarboard me-2"></i> Exam Grades
                 </a>
+                <a href="{{ route('admin.materials.index') }}" class="nav-link {{ request()->routeIs('admin.materials.*') ? 'active' : '' }}">
+                <i class="bi bi-journal-bookmark me-2"></i>Learning Materials
+               </a>
             @endif
 
             <!-- ================= STUDENT MENU ================= -->

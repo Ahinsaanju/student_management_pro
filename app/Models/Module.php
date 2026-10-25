@@ -26,4 +26,8 @@ class Module extends Model
     {
         return $this->belongsTo(Course::class, 'course_id');
     }
+    public function learningMaterials()
+{
+    return $this->hasMany(LearningMaterial::class);
+}
 }

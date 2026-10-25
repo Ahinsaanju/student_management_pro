@@ -32,7 +32,7 @@
                         <th>Student Name</th>
                         <th>Module / Course</th>
                         <th class="text-center">Status</th>
-                        <th class="text-center">Action</th> <!-- 👈 මෙන්න අලුත් Column එක -->
+                        <th class="text-center">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -40,9 +40,24 @@
                     <tr>
                         <td class="fw-semibold text-secondary">{{ $log->date }}</td>
                         <td class="fw-bold text-dark">{{ $log->student->user->name ?? 'N/A' }}</td>
+                        
+                        <!-- 🎓 Updated Module / Course Column -->
                         <td>
-                            <span class="fw-semibold text-primary">{{ $log->course->course_code ?? 'N/A' }}</span>
+                            @if($log->module)
+                                <span class="fw-bold text-primary">
+                                    {{ $log->module->module_code ?? '' }}
+                                </span>
+                                - {{ $log->module->name ?? $log->module->module_name ?? '' }}
+                            @elseif($log->course)
+                                <span class="fw-bold text-secondary">
+                                    {{ $log->course->course_code ?? '' }}
+                                </span>
+                                - {{ $log->course->course_name ?? $log->course->name ?? '' }}
+                            @else
+                                <span class="text-muted">N/A</span>
+                            @endif
                         </td>
+
                         <td class="text-center">
                             <span class="badge {{ $log->status == 'Present' ? 'bg-success' : 'bg-danger' }} bg-opacity-10 {{ $log->status == 'Present' ? 'text-success' : 'text-danger' }} rounded-pill px-4 py-2">
                                 {{ $log->status }}
@@ -56,7 +71,7 @@
                                     <i class="bi bi-pencil-square me-1"></i> Edit
                                 </a>
                                 
-                                <!-- Delete button (Confirm Popup ) -->
+                                <!-- Delete button -->
                                 <form action="{{ route('admin.attendance.destroy', $log->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this attendance record?');">
                                     @csrf
                                     @method('DELETE')
