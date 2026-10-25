@@ -25,7 +25,10 @@ StuDora is a full-stack Laravel web application designed for managing student re
 
 ---
 
+
 ##  Tech Stack
+
+
 
 - **Backend:** Laravel (PHP 10.x), MySQL
 - **Frontend:** Bootstrap 5, Blade Templates, JavaScript (AJAX)
